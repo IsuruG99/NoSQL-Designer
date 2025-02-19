@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
-# Allow frontend (localhost:5173) to access backend (127.0.0.1:8000)
+# Just CORS Things
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # Change "*" to ["http://localhost:5173"] for stricter security
@@ -13,13 +13,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Request Model
+# Was used for the AI, unused for now.
 class SchemaRequest(BaseModel):
     description: str
     entities: str = ""
     constraints: str = ""
 
-# Static Response JSON
+# Example Static Schema till UI is ready
 STATIC_SCHEMA = {
     "Orders": {
         "Name": "Orders",
@@ -64,12 +64,11 @@ STATIC_SCHEMA = {
     }
 }
 
-# Schema Generation Logic (Now simplified)
+# Schema Generation (simplified till I fix the UI)
 def generate_schema(data: SchemaRequest):
     if not data.description:
         raise HTTPException(status_code=400, detail="Description is mandatory.")
     
-    # Just return the static schema
     return STATIC_SCHEMA
 
 # API Endpoint

@@ -4,7 +4,7 @@ import './jsonCard.css';
 function JsonCard({ entity }) {
     return (
         <div className="json-card">
-            <h3>{entity.Name}</h3> {/* Using Name from the entity */}
+            <h3>{entity.Name}</h3>
             <hr />
             <ul>
                 {Object.entries(entity.Attributes).map(([key, value]) => (

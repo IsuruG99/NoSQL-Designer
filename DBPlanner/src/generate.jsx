@@ -14,7 +14,7 @@ function Generate() {
     setLoading(true);
     setElapsedTime(0);
 
-    // Start a timer
+    // Unused for now, Timer for AI Response Delay
     const timer = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
     }, 1000);
