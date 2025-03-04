@@ -1,6 +1,6 @@
 import { useState } from "react";
 import "./generate.css";
-import Panel from "./panel.jsx"
+import Panel from "./panel.jsx";
 
 function Generate() {
   const [description, setDescription] = useState("");
@@ -14,7 +14,6 @@ function Generate() {
     setLoading(true);
     setElapsedTime(0);
 
-    // Unused for now, Timer for AI Response Delay
     const timer = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
     }, 1000);
@@ -37,14 +36,37 @@ function Generate() {
   };
 
   return (
-    <div>
-      <h1>NoSQL Schema Generator</h1>
-      <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" />
-      <input value={entities} onChange={(e) => setEntities(e.target.value)} placeholder="Entities (comma-separated)" />
-      <input value={constraints} onChange={(e) => setConstraints(e.target.value)} placeholder="Constraints (comma-seperated)" />
-      <button onClick={handleGenerate} disabled={loading}>Generate</button>
+    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
+      <h1 className="text-3xl font-bold mb-4">NoSQL Schema Generator</h1>
+      <div className="w-full max-w-3xl space-y-4">
+        <textarea 
+          value={description} 
+          onChange={(e) => setDescription(e.target.value)} 
+          placeholder="Description" 
+          className="w-full p-3 bg-gray-800 text-white rounded-lg h-24 resize-none overflow-y-auto"
+        />
+        <input 
+          value={entities} 
+          onChange={(e) => setEntities(e.target.value)} 
+          placeholder="Entities (comma-separated)" 
+          className="w-full p-3 bg-gray-800 text-white rounded-lg"
+        />
+        <input 
+          value={constraints} 
+          onChange={(e) => setConstraints(e.target.value)} 
+          placeholder="Constraints (comma-separated)" 
+          className="w-full p-3 bg-gray-800 text-white rounded-lg"
+        />
+        <button 
+          onClick={handleGenerate} 
+          disabled={loading} 
+          className="w-full p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-semibold"
+        >
+          Generate
+        </button>
+      </div>
 
-      <Panel schema={schema} loading={loading} elapsedTime={elapsedTime} />
+      <Panel schema={schema} loading={loading} elapsedTime={elapsedTime} className="w-full" />
     </div>
   );
 }
