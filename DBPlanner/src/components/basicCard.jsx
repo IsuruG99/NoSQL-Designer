@@ -7,13 +7,13 @@ function JsonCard({ entity }) {
     }
 
     return (
-        <div className="json-card p-4 bg-gray-900 text-white rounded-lg shadow-lg w-full max-w-sm overflow-y-auto border border-gray-700">
-            <h3 className="text-lg font-bold mb-2">{entity.Name}</h3>
+        <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] h-full border border-gray-700">
+            <h3 className="text-lg font-bold mb-2 text-cyan-400">{entity.Name}</h3>
             <hr className="border-gray-600 mb-2" />
             <ul className="text-sm space-y-1">
                 {Object.entries(entity.Attributes).map(([key, value]) => (
                     <li key={key} className="truncate">
-                        <strong>{key}:</strong> {value}
+                        <strong className="text-cyan-300">{key}:</strong> <span className="text-gray-300">{value}</span>
                     </li>
                 ))}
             </ul>

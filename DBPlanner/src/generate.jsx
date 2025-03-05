@@ -1,18 +1,22 @@
-import { useState } from "react";
-import "./generate.css";
-import Panel from "./panel.jsx";
+import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { SchemaContext } from "./SchemaContext.jsx";
+import Panel from "./basicPanel.jsx";
 
 function Generate() {
   const [description, setDescription] = useState("");
   const [entities, setEntities] = useState("");
   const [constraints, setConstraints] = useState("");
-  const [schema, setSchema] = useState("");
   const [loading, setLoading] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [generated, setGenerated] = useState(false);
+  const { schema, setSchema } = useContext(SchemaContext);
+  const navigate = useNavigate();
 
   const handleGenerate = async () => {
     setLoading(true);
     setElapsedTime(0);
+    setGenerated(false);
 
     const timer = setInterval(() => {
       setElapsedTime((prev) => prev + 1);
@@ -27,6 +31,7 @@ function Generate() {
 
       const data = await response.json();
       setSchema(data.schema);
+      setGenerated(true);
     } catch (error) {
       setSchema("Error: Failed to fetch schema.");
     } finally {
@@ -36,9 +41,8 @@ function Generate() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
-      <h1 className="text-3xl font-bold mb-4">NoSQL Schema Generator</h1>
-      <div className="w-full max-w-3xl space-y-4">
+    <div className="flex flex-col items-center w-full ">
+      <div className="input w-full max-w-3xl space-y-4">
         <textarea 
           value={description} 
           onChange={(e) => setDescription(e.target.value)} 
@@ -67,6 +71,14 @@ function Generate() {
       </div>
 
       <Panel schema={schema} loading={loading} elapsedTime={elapsedTime} className="w-full" />
+      {generated && (
+        <button 
+          onClick={() => navigate("/editor")}
+          className="mt-4 p-3 bg-cyan-600 hover:bg-cyan-600 rounded-lg font-semibold"
+        >
+          Move to Detailed View?
+        </button>
+      )}
     </div>
   );
 }

@@ -60,6 +60,13 @@ STATIC_SCHEMA = {
             "Price": "number",
             "Category": "string",
             "Availability": "boolean"
+        },
+    },
+    "Test6": {
+        "Name": "5th Item",
+        "Attributes": {
+            "Testing": "string",
+            "123": "number"
         }
     }
 }
