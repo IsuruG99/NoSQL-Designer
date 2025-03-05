@@ -1,25 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import JsonCard from './components/basicCard.jsx';
 
 function Panel({ schema, loading, elapsedTime }) {
-    const [columns, setColumns] = useState(1);
-
-    useEffect(() => {
-        const updateColumns = () => {
-            const screenWidth = window.innerWidth;
-            const cardWidth = screenWidth * 0.05;
-            const maxColumns = Math.floor(screenWidth / cardWidth);
-            setColumns(Math.max(1, maxColumns));
-        };
-
-        updateColumns();
-        window.addEventListener('resize', updateColumns);
-        return () => window.removeEventListener('resize', updateColumns);
-    }, []);
-
     return (
-        <div className="panel flex flex-col p-4 w-full">
-            <h2 className="text-white text-xl mb-2">Drawing Panel</h2>
+        <div className="panel flex flex-col p-4">
+            <h2 className="text-white text-xl mb-2 text-center">Drawing Panel</h2>
             {loading ? (
                 <p className="text-white">⏳ Waiting for backend... {elapsedTime} sec elapsed</p>
             ) : (

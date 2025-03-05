@@ -1,0 +1,2 @@
+Last session thoughts.
+1. change editCard display as a modal instead of editor's Ui.

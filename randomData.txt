@@ -1,5 +1,4 @@
-// if needed to run frontend/backend together
-    //, "dev": "concurrently \"uvicorn backend.main:app --reload\" \"vite\""
+// JSON Format example. NOSQL Database schema.
 
 example_output_from_deepseek=(
 {

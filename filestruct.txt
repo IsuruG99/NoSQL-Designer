@@ -16,3 +16,6 @@ DBPlanner
 -README.md
 -vite.config.js
 filestruct.txt
+
+// if needed to run frontend/backend together
+    //, "dev": "concurrently \"uvicorn backend.main:app --reload\" \"vite\""
