@@ -18,38 +18,36 @@ function AdvCard({ entity, onEdit }) {
     };
 
     const renderAttribute = (key, value) => {
-        if (typeof value === 'object' && value !== null) {
-            if (value.type === 'object') {
-                return (
-                    <li key={key} className="truncate">
-                        <strong className="text-cyan-300">{key}:</strong>
-                        <ul className="ml-4">
-                            {Object.entries(value.properties).map(([subKey, subValue]) => (
-                                <li key={subKey} className="truncate">
-                                    <strong className="text-cyan-300">{subKey}:</strong> <span className="text-gray-300">{subValue}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                );
-            } else if (value.type === 'array') {
-                return (
-                    <li key={key} className="truncate">
-                        <strong className="text-cyan-300">{key}:</strong>
-                        <ul className="ml-4">
-                            {Object.entries(value.items.properties).map(([subKey, subValue]) => (
-                                <li key={subKey} className="truncate">
-                                    <strong className="text-cyan-300">{subKey}:</strong> <span className="text-gray-300">{subValue}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </li>
-                );
-            }
+        if (value.type === 'object') {
+            return (
+                <li key={key} className="truncate">
+                    <strong className="text-cyan-300">{key}:</strong>
+                    <ul className="ml-4">
+                        {Object.entries(value.properties).map(([subKey, subValue]) => (
+                            <li key={subKey} className="truncate">
+                                <strong className="text-cyan-300">{subKey}:</strong> <span className="text-gray-300">{subValue.type}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </li>
+            );
+        } else if (value.type === 'array') {
+            return (
+                <li key={key} className="truncate">
+                    <strong className="text-cyan-300">{key}:</strong>
+                    <ul className="ml-4">
+                        {Object.entries(value.items.properties).map(([subKey, subValue]) => (
+                            <li key={subKey} className="truncate">
+                                <strong className="text-cyan-300">{subKey}:</strong> <span className="text-gray-300">{subValue.type}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </li>
+            );
         } else {
             return (
                 <li key={key} className="truncate">
-                    <strong className="text-cyan-300">{key}:</strong> <span className="text-gray-300">{value}</span>
+                    <strong className="text-cyan-300">{key}:</strong> <span className="text-gray-300">{value.type}</span>
                 </li>
             );
         }

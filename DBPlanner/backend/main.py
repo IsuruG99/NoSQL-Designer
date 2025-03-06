@@ -71,73 +71,73 @@ STATIC_SCHEMA = {
     }
 }
 STATIC_EXTENSIVE_SCHEMA = {
-  "Orders": {
-    "Name": "Orders",
-    "Attributes": {
-      "OrderID": "string",
-      "OrderTime": "timestamp",
-      "Items": {
-        "type": "array",
-        "items": {
-          "type": "object",
-          "properties": {
-            "ItemID": "string",
-            "Quantity": "number",
-            "Price": "number"
-          }
+    "Orders": {
+        "Name": "Orders",
+        "Attributes": {
+            "OrderID": {"type": "string"},
+            "OrderTime": {"type": "timestamp"},
+            "Items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "ItemID": {"type": "string"},
+                        "Quantity": {"type": "number"},
+                        "Price": {"type": "number"}
+                    }
+                }
+            },
+            "Status": {"type": "string"},
+            "TotalPrice": {"type": "number"}
         }
-      },
-      "Status": "string",
-      "TotalPrice": "number"
-    }
-  },
-  "Salary": {
-    "Name": "Salary",
-    "Attributes": {
-      "SalaryID": "string",
-      "StaffID": "string",
-      "Amount": "number",
-      "PaymentDate": "timestamp"
-    }
-  },
-  "Staff": {
-    "Name": "Staff",
-    "Attributes": {
-      "StaffID": "string",
-      "Name": "string",
-      "PhoneNumber": "string",
-      "Role": "string",
-      "StartDate": "timestamp",
-      "Status": "string",
-      "Address": {
-        "type": "object",
-        "properties": {
-          "Street": "string",
-          "City": "string",
-          "State": "string",
-          "ZipCode": "string"
+    },
+    "Salary": {
+        "Name": "Salary",
+        "Attributes": {
+            "SalaryID": {"type": "string"},
+            "StaffID": {"type": "string"},
+            "Amount": {"type": "number"},
+            "PaymentDate": {"type": "timestamp"}
         }
-      }
-    }
-  },
-  "MenuItems": {
-    "Name": "MenuItems",
-    "Attributes": {
-      "MenuItemID": "string",
-      "Name": "string",
-      "Description": "string",
-      "Price": "number",
-      "Category": "string",
-      "Availability": "boolean",
-      "Tags": {
-        "type": "object",
-        "properties": {
-          "Cuisine": "string",
-          "SpicyLevel": "string"
+    },
+    "Staff": {
+        "Name": "Staff",
+        "Attributes": {
+            "StaffID": {"type": "string"},
+            "Name": {"type": "string"},
+            "PhoneNumber": {"type": "string"},
+            "Role": {"type": "string"},
+            "StartDate": {"type": "timestamp"},
+            "Status": {"type": "string"},
+            "Address": {
+                "type": "object",
+                "properties": {
+                    "Street": {"type": "string"},
+                    "City": {"type": "string"},
+                    "State": {"type": "string"},
+                    "ZipCode": {"type": "string"}
+                }
+            }
         }
-      }
+    },
+    "MenuItems": {
+        "Name": "MenuItems",
+        "Attributes": {
+            "MenuItemID": {"type": "string"},
+            "Name": {"type": "string"},
+            "Description": {"type": "string"},
+            "Price": {"type": "number"},
+            "Category": {"type": "string"},
+            "Availability": {"type": "boolean"},
+            "Tags": {
+                "type": "object",
+                "properties": {
+                    "Cuisine": {"type": "string"},
+                    "SpicyLevel": {"type": "string"}
+                }
+            }
+        }
     }
-  }
 }
 
 # Schema Generation (simplified till I fix the UI)
