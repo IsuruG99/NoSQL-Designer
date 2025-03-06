@@ -43,17 +43,21 @@ function EditableCard({ handleCloseModal }) {
         const updatedAttributes = { ...tempAttributes };
         let nestedAttributes = updatedAttributes;
     
-        keys.slice(0, -1).forEach(k => {
-            if (!nestedAttributes[k].properties) {
-                nestedAttributes[k].properties = {};
+        for (let i = 0; i < keys.length - 1; i++) {
+            const key = keys[i];
+            if (!nestedAttributes[key]) {
+                nestedAttributes[key] = { type: 'object', properties: {} };
             }
-            nestedAttributes = nestedAttributes[k].properties;
-        });
+            nestedAttributes = nestedAttributes[key].properties;
+        }
     
-        nestedAttributes[keys[keys.length - 1]] = value;
+        const lastKey = keys[keys.length - 1];
+        nestedAttributes[lastKey] = value;
+    
         setTempAttributes(updatedAttributes);
         setTempSelectedEntity({ ...tempSelectedEntity, Attributes: updatedAttributes });
     };
+    
 
     const handleAddAttribute = () => {
         const newKey = `NewAttribute${Object.keys(tempAttributes).length + 1}`;
@@ -63,6 +67,10 @@ function EditableCard({ handleCloseModal }) {
         setTempSelectedEntity({ ...tempSelectedEntity, Attributes: updatedAttributes });
     };
 
+    const handleAddSubAttribute = (keyPath) => {
+        pass; //we will not bother with this, it is not handled and will not be looked at for near future.
+    };
+
     const handleKeyChange = (keyPath, newKey) => {
         if (newKey.trim() !== "" && !/^\d/.test(newKey)) {
             const keys = keyPath.split('.');
@@ -70,12 +78,14 @@ function EditableCard({ handleCloseModal }) {
             let nestedAttributes = tempAttributes;
     
             keys.forEach(k => {
-                if (!nestedAttributes[k].properties) {
+                if (!nestedAttributes[k]) {
+                    nestedAttributes[k] = { properties: {} };
+                } else if (!nestedAttributes[k].properties) {
                     nestedAttributes[k].properties = {};
                 }
                 nestedAttributes = nestedAttributes[k].properties;
             });
-
+    
             if (nestedAttributes.hasOwnProperty(newKey)) {
                 alert("An attribute with this name already exists.");
                 return;
@@ -86,7 +96,7 @@ function EditableCard({ handleCloseModal }) {
             nestedAttributes[newKey] = value;
     
             setTempAttributes({ ...tempAttributes });
-            setTempSelectedEntity({ ...tempSelectedEntity, Attributes: tempAttributes });
+            setTempSelectedEntity({ ...tempSelectedEntity, Attributes: { ...tempAttributes } });
         }
     };
 
@@ -132,26 +142,36 @@ function EditableCard({ handleCloseModal }) {
     };
 
     const renderAttributeEditor = (key, value, keyPath = key) => {
+        console.log("Rendering attribute editor for:", key, value, keyPath);
         if (typeof value === 'object' && value !== null) {
-            if (value.type === 'object') {
+            if (value.type === 'object' && value.properties) {
                 return (
                     <li key={keyPath} className="truncate">
-                        <strong className="text-cyan-300">{key}:</strong>
+                        <div className="flex items-center">
+                            <input
+                                type="text"
+                                value={editingKey === keyPath ? tempEditingKey : key}
+                                onChange={(e) => {
+                                    const newKey = e.target.value;
+                                    setTempEditingKey(newKey);
+                                    setEditingKey(keyPath);
+                                }}
+                                onBlur={() => {
+                                    if (editingKey === keyPath) {
+                                        handleKeyChange(keyPath, tempEditingKey);
+                                        setEditingKey(null);
+                                        setTempEditingKey("");
+                                    }
+                                }}
+                                className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2"
+                            />
+                            <span className="text-cyan-300 mr-2">:</span>
+                            <span className="text-gray-300">object</span>
+                        </div>
                         <ul className="ml-4">
-                            {Object.entries(value.properties).map(([subKey, subValue]) => (
-                                renderAttributeEditor(subKey, subValue, `${keyPath}.${subKey}`)
-                            ))}
-                        </ul>
-                    </li>
-                );
-            } else if (value.type === 'array') {
-                return (
-                    <li key={keyPath} className="truncate">
-                        <strong className="text-cyan-300">{key}:</strong>
-                        <ul className="ml-4">
-                            {Object.entries(value.items.properties).map(([subKey, subValue]) => (
-                                renderAttributeEditor(subKey, subValue, `${keyPath}.${subKey}`)
-                            ))}
+                            {Object.entries(value.properties).map(([subKey, subValue]) => 
+                                renderAttributeEditor(subKey, subValue, `${keyPath}.properties.${subKey}`)
+                            )}
                         </ul>
                     </li>
                 );
@@ -169,46 +189,27 @@ function EditableCard({ handleCloseModal }) {
                     setTempEditingKey={setTempEditingKey}
                     handleKeyChange={handleKeyChange}
                     handleAttributeChange={handleAttributeChange}
+                    handleAddSubAttribute={handleAddSubAttribute}
                 />
             );
         }
     };
 
     return (
-        <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg w-full min-w-[200px] min-h-[500px] h-full border border-gray-700 flex flex-col justify-between custom-scrollbar">
-            <div>
-                <input
-                    type="text"
-                    value={entityName}
-                    onChange={handleNameChange}
-                    className="text-lg font-bold mb-2 text-cyan-400 bg-transparent border-none focus:outline-none"
-                />
-                <hr className="border-gray-600 mb-2" />
-                <ul className="text-sm space-y-1">
-                    {tempKeys.map((key) => (
-                        renderAttributeEditor(key, tempAttributes[key])
-                    ))}
-                </ul>
-                <li className="truncate flex items-center justify-between hover:bg-gray-700 rounded p-1 m-1">
-                    <button
-                        onClick={handleAddAttribute}
-                        className="text-cyan-400 bg-transparent border-none focus:outline-none hover:text-cyan-600"
-                    >
-                        + Add Attribute
-                    </button>
-                </li>
-            </div>
-            <div>
-                <hr className="border-gray-600 my-2" />
-                <div className="flex justify-end">
-                    <button
-                        onClick={handleSave}
-                        className="mt-2 ml-2 px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
-                    >
-                        Save
-                    </button>
-                </div>
-            </div>
+        <div>
+            <h2>Edit Entity: {entityName}</h2>
+            <input
+                type="text"
+                value={entityName}
+                onChange={handleNameChange}
+                className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2"
+            />
+            <ul>
+                {tempKeys.map((key) => renderAttributeEditor(key, tempAttributes[key]))}
+            </ul>
+            <button onClick={handleAddAttribute}>Add Attribute</button>
+            <button onClick={handleSave}>Save</button>
+            <button onClick={handleCloseModal}>Cancel</button>
         </div>
     );
 }
@@ -222,30 +223,35 @@ function AttributeEditor({
     setEditingKey,
     setTempEditingKey,
     handleKeyChange,
-    handleAttributeChange
+    handleAttributeChange,
+    handleAddSubAttribute // Add this prop
 }) {
+    const isFirstLevel = keyPath.split('.').length === 1;
+    const isObjectType = attributeValue && attributeValue.type === 'object';
+
     return (
-        <li className="truncate flex items-center justify-between hover:bg-gray-700 p-1 rounded">
-            <input
-                type="text"
-                value={editingKey === keyPath ? tempEditingKey : attributeKey}
-                onChange={(e) => {
-                    const newKey = e.target.value;
-                    setTempEditingKey(newKey);
-                    setEditingKey(keyPath);
-                }}
-                onBlur={() => {
-                    if (editingKey === keyPath) {
-                        handleKeyChange(keyPath, tempEditingKey);
-                        setEditingKey(null);
-                        setTempEditingKey("");
-                    }
-                }}
-                className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2 flex-grow"
-            />
-            <div className="flex-shrink-0">
+        <li className="truncate flex items-center justify-between hover:bg-gray-700 p-1 rounded relative">
+            <div className="flex items-center flex-grow">
+                <input
+                    type="text"
+                    value={editingKey === keyPath ? tempEditingKey : attributeKey}
+                    onChange={(e) => {
+                        const newKey = e.target.value;
+                        setTempEditingKey(newKey);
+                        setEditingKey(keyPath);
+                    }}
+                    onBlur={() => {
+                        if (editingKey === keyPath) {
+                            handleKeyChange(keyPath, tempEditingKey);
+                            setEditingKey(null);
+                            setTempEditingKey("");
+                        }
+                    }}
+                    className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2"
+                />
+                <span className="text-cyan-300 mr-2">:</span>
                 <select
-                    value={attributeValue}
+                    value={attributeValue?.type || attributeValue}
                     onChange={(e) => handleAttributeChange(keyPath, e.target.value)}
                     className="text-gray-300 bg-gray-700 border border-gray-600 rounded focus:outline-none"
                 >
@@ -253,6 +259,22 @@ function AttributeEditor({
                         <option key={type} value={type}>{type}</option>
                     ))}
                 </select>
+            </div>
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                {isFirstLevel && isObjectType && (
+                    <button
+                        className="text-white-500 text-sm hover:text-blue-500"
+                        onClick={() => handleAddSubAttribute(keyPath)}
+                    >
+                        Sub
+                    </button>
+                )}
+                <button
+                    className="text-white-500 text-xl hover:text-red-700"
+                    onClick={() => { /* handleDeleteAttribute(keyPath) */ }}
+                >
+                    X
+                </button>
             </div>
         </li>
     );

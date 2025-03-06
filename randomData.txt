@@ -61,7 +61,7 @@ example_database_schema=(
       "Category": "string",
       "Availability": "boolean",
       "Tags": {
-        "type": "map",
+        "type": "object",
         "properties": {
           "Cuisine": "string",
           "SpicyLevel": "string"

@@ -130,7 +130,7 @@ STATIC_EXTENSIVE_SCHEMA = {
       "Category": "string",
       "Availability": "boolean",
       "Tags": {
-        "type": "map",
+        "type": "object",
         "properties": {
           "Cuisine": "string",
           "SpicyLevel": "string"
@@ -139,6 +139,7 @@ STATIC_EXTENSIVE_SCHEMA = {
     }
   }
 }
+
 # Schema Generation (simplified till I fix the UI)
 def generate_schema(data: SchemaRequest):
     if not data.description:
