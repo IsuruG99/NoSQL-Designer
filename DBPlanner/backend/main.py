@@ -146,6 +146,11 @@ def generate_schema(data: SchemaRequest):
     
     return STATIC_EXTENSIVE_SCHEMA
 
+# Root Endpoint
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to the FastAPI application!"}
+
 # API Endpoint
 @app.post("/generate-schema")
 def generate(data: SchemaRequest):

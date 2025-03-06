@@ -23,7 +23,7 @@ function AdvPanel({ schema, loading, elapsedTime, onEdit }) {
             </div>
           ) : (
             <div className="flex rounded-lg items-center justify-center border border-gray-700 p-4 w-full text-center text-gray-500 h-64">
-              <div>No schema available. Please generate a schema to view details.</div>
+              <div>No schema available. <br /> Please generate a schema to view details.</div>
             </div>
           )}
         </>

@@ -30,8 +30,12 @@ function Generate() {
       });
 
       const data = await response.json();
-      setSchema(data.schema);
-      setGenerated(true);
+      if (data.schema) {
+        setSchema(data.schema);
+        setGenerated(true);
+      } else {
+        setSchema("Error: " + (data.detail || "Failed to fetch schema."));
+      }
     } catch (error) {
       setSchema("Error: Failed to fetch schema.");
     } finally {
