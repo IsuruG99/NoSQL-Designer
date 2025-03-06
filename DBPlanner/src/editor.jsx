@@ -20,7 +20,7 @@ const Editor = () => {
             <div className="editor w-full max-w-4xl space-y-4 h-full">
                 {selectedEntity && (
                     <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-                        <EditableCard />
+                        <EditableCard handleCloseModal={handleCloseModal} />
                     </Modal>
                 )}
             </div>

@@ -14,8 +14,8 @@ const dataTypes = [
     "map"
 ];
 
-function EditableCard() {
-    const { tempSelectedEntity, setTempSelectedEntity, setSelectedEntity } = useContext(SchemaContext);
+function EditableCard({ handleCloseModal }) {
+    const { schema, setSchema, tempSelectedEntity, setTempSelectedEntity, originalSelectedEntity, setOriginalSelectedEntity, setSelectedEntity } = useContext(SchemaContext);
     const [entityName, setEntityName] = useState(tempSelectedEntity?.Name || "");
     const [attributes, setAttributes] = useState(tempSelectedEntity?.Attributes || {});
     const [tempAttributes, setTempAttributes] = useState(attributes);
@@ -42,11 +42,14 @@ function EditableCard() {
         const keys = keyPath.split('.');
         const updatedAttributes = { ...tempAttributes };
         let nestedAttributes = updatedAttributes;
-
+    
         keys.slice(0, -1).forEach(k => {
+            if (!nestedAttributes[k].properties) {
+                nestedAttributes[k].properties = {};
+            }
             nestedAttributes = nestedAttributes[k].properties;
         });
-
+    
         nestedAttributes[keys[keys.length - 1]] = value;
         setTempAttributes(updatedAttributes);
         setTempSelectedEntity({ ...tempSelectedEntity, Attributes: updatedAttributes });
@@ -60,28 +63,71 @@ function EditableCard() {
         setTempSelectedEntity({ ...tempSelectedEntity, Attributes: updatedAttributes });
     };
 
-    const handleSave = () => {
-        setAttributes(tempAttributes);
-        setSelectedEntity({ ...tempSelectedEntity, Attributes: tempAttributes });
-    };
-
     const handleKeyChange = (keyPath, newKey) => {
         if (newKey.trim() !== "" && !/^\d/.test(newKey)) {
-            const updatedAttributes = { ...tempAttributes };
             const keys = keyPath.split('.');
             const lastKey = keys.pop();
-            let nestedAttributes = updatedAttributes;
-
+            let nestedAttributes = tempAttributes;
+    
             keys.forEach(k => {
+                if (!nestedAttributes[k].properties) {
+                    nestedAttributes[k].properties = {};
+                }
                 nestedAttributes = nestedAttributes[k].properties;
             });
 
+            if (nestedAttributes.hasOwnProperty(newKey)) {
+                alert("An attribute with this name already exists.");
+                return;
+            }
+    
             const value = nestedAttributes[lastKey];
             delete nestedAttributes[lastKey];
             nestedAttributes[newKey] = value;
+    
+            setTempAttributes({ ...tempAttributes });
+            setTempSelectedEntity({ ...tempSelectedEntity, Attributes: tempAttributes });
+        }
+    };
 
-            setTempAttributes(updatedAttributes);
-            setTempSelectedEntity({ ...tempSelectedEntity, Attributes: updatedAttributes });
+    const handleSave = () => {
+        try {
+            // Ensure all session variables are intact
+            if (!schema || !tempSelectedEntity || !originalSelectedEntity) {
+                throw new Error("Session variables are missing.");
+            }
+    
+            // Ensure schema is an object
+            if (typeof schema !== 'object' || Array.isArray(schema)) {
+                throw new Error("Schema is not an object.");
+            }
+    
+            // Create a copy of the schema
+            const updatedSchema = { ...schema };
+    
+            // Remove the original selected entity from the schema
+            if (updatedSchema.hasOwnProperty(originalSelectedEntity.Name)) {
+                delete updatedSchema[originalSelectedEntity.Name];
+            } else {
+                throw new Error("Original selected entity not found in schema.");
+            }
+    
+            // Append the temp selected entity to the schema
+            updatedSchema[tempSelectedEntity.Name] = tempSelectedEntity;
+    
+            // Update the schema state
+            setSchema(updatedSchema);
+    
+            // Clear original and temp selected entities
+            setOriginalSelectedEntity(null);
+            setTempSelectedEntity(null);
+            setSelectedEntity(null);
+    
+            // Close the modal
+            handleCloseModal();
+        } catch (error) {
+            console.error("Failed to save changes:", error);
+            alert(error.message);
         }
     };
 
