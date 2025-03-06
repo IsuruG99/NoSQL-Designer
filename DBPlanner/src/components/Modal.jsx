@@ -3,14 +3,18 @@ import React from 'react';
 const Modal = ({ isOpen, onClose, children }) => {
     if (!isOpen) return null;
 
+    const handleClose = () => {
+        onClose();
+    };
+
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="flex items-center justify-center w-full h-full">
-                <div className="relative bg-white rounded-lg shadow-lg max-w-lg w-auto mx-4 border border-gray-200">
-                    <button onClick={onClose} className="absolute top-2 right-2 text-gray-300 hover:text-gray-200 text-2xl">
+            <div className="flex items-center justify-center w-full h-full max-w-5xl">
+                <div className="relative bg-black rounded-lg shadow-lg max-w-3xl w-full mx-4 border border-black">
+                    <button onClick={handleClose} className="absolute top-5 right-7 text-gray-300 hover:text-gray-200 text-2xl">
                         &times;
                     </button>
-                    <div className="flex items-center justify-center h-full">
+                    <div className="flex flex-col items-center justify-center h-full p-4">
                         {children}
                     </div>
                 </div>

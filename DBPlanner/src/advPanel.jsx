@@ -3,17 +3,23 @@ import AdvCard from './components/advCard.jsx';
 
 function AdvPanel({ schema, loading, elapsedTime, onEdit }) {
   return (
-    <div className="panel flex flex-col p-4">
+    <div className="panel flex flex-col p-4 min-h-screen h-full mx-10 mt-10">
       <h2 className="text-white text-xl mb-2 text-center">Drawing Panel</h2>
       {loading ? (
         <p className="text-white">⏳ Waiting for backend... {elapsedTime} sec elapsed</p>
       ) : (
         <>
           {schema && typeof schema === 'object' ? (
-            <div className="panel__output grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 place-items-center items-fit">
+            <div className="panel__output grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 place-items-center items-fit w-full">
               {Object.keys(schema).map((key, index) => (
                 <AdvCard key={index} entity={schema[key]} onEdit={onEdit} />
               ))}
+              <div
+                onClick={() => {}}
+                className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[200px] min-h-[300px] border border-dotted border-gray-500 flex items-center justify-center cursor-pointer"
+              >
+                <span className="text-7xl text-cyan-400">+</span>
+              </div>
             </div>
           ) : (
             <div className="flex rounded-lg items-center justify-center border border-gray-700 p-4 w-full text-center text-gray-500 h-64">

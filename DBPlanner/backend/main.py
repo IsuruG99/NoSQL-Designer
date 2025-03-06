@@ -70,13 +70,81 @@ STATIC_SCHEMA = {
         }
     }
 }
-
+STATIC_EXTENSIVE_SCHEMA = {
+  "Orders": {
+    "Name": "Orders",
+    "Attributes": {
+      "OrderID": "string",
+      "OrderTime": "timestamp",
+      "Items": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "ItemID": "string",
+            "Quantity": "number",
+            "Price": "number"
+          }
+        }
+      },
+      "Status": "string",
+      "TotalPrice": "number"
+    }
+  },
+  "Salary": {
+    "Name": "Salary",
+    "Attributes": {
+      "SalaryID": "string",
+      "StaffID": "string",
+      "Amount": "number",
+      "PaymentDate": "timestamp"
+    }
+  },
+  "Staff": {
+    "Name": "Staff",
+    "Attributes": {
+      "StaffID": "string",
+      "Name": "string",
+      "PhoneNumber": "string",
+      "Role": "string",
+      "StartDate": "timestamp",
+      "Status": "string",
+      "Address": {
+        "type": "object",
+        "properties": {
+          "Street": "string",
+          "City": "string",
+          "State": "string",
+          "ZipCode": "string"
+        }
+      }
+    }
+  },
+  "MenuItems": {
+    "Name": "MenuItems",
+    "Attributes": {
+      "MenuItemID": "string",
+      "Name": "string",
+      "Description": "string",
+      "Price": "number",
+      "Category": "string",
+      "Availability": "boolean",
+      "Tags": {
+        "type": "map",
+        "properties": {
+          "Cuisine": "string",
+          "SpicyLevel": "string"
+        }
+      }
+    }
+  }
+}
 # Schema Generation (simplified till I fix the UI)
 def generate_schema(data: SchemaRequest):
     if not data.description:
         raise HTTPException(status_code=400, detail="Description is mandatory.")
     
-    return STATIC_SCHEMA
+    return STATIC_EXTENSIVE_SCHEMA
 
 # API Endpoint
 @app.post("/generate-schema")

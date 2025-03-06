@@ -11,8 +11,11 @@ Designer Functionality
 2. Add a + Card for adding new cards to schema (again, using session variables)
 
 Additional Functionality
+-1. maket he card inner scroll not affect title and edit buttons.
+0. Sub attribute add option on Hover
 1. Search
 2. Make advPanel a visible GRID
 3. Drag N Drop
+
 
 

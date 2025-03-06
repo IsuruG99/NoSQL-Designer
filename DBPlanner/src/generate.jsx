@@ -41,8 +41,8 @@ function Generate() {
   };
 
   return (
-    <div className="flex flex-col items-center w-full ">
-      <div className="input w-full max-w-3xl space-y-4">
+    <div className="flex flex-col items-center w-full h-full ">
+      <div className="input h-full w-full max-w-7xl space-y-4 mt-5 mx-20">
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
