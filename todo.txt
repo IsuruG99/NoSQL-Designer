@@ -1,2 +1,18 @@
-Last session thoughts.
-1. change editCard display as a modal instead of editor's Ui.
+Current plan
+
+Session Variable Implementation.
+1. Fix the Header to a nav bar, with Generate / Design / Export tabs (Done entirely using main.jsx).
+2. Req Session Variables={
+    1. Generated schema (currently stored in SchemaContext).
+    2. Original selected Card & temp selected Card (if user opened the modal for edit card).}.
+
+Designer Functionality
+1. Save edited card (utilizing original selec. card and temp selec. card session variables).
+2. Add a + Card for adding new cards to schema (again, using session variables)
+
+Additional Functionality
+1. Search
+2. Make advPanel a visible GRID
+3. Drag N Drop
+
+

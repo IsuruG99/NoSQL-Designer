@@ -1,10 +1,7 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import AdvCard from './components/advCard.jsx';
-import { SchemaContext } from './SchemaContext';
 
-function advPanel({ schema, loading, elapsedTime }) {
-  const { selectedEntity } = useContext(SchemaContext);
-
+function AdvPanel({ schema, loading, elapsedTime, onEdit }) {
   return (
     <div className="panel flex flex-col p-4">
       <h2 className="text-white text-xl mb-2 text-center">Drawing Panel</h2>
@@ -15,7 +12,7 @@ function advPanel({ schema, loading, elapsedTime }) {
           {schema && typeof schema === 'object' ? (
             <div className="panel__output grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 place-items-center items-fit">
               {Object.keys(schema).map((key, index) => (
-                <AdvCard key={index} entity={schema[key]} />
+                <AdvCard key={index} entity={schema[key]} onEdit={onEdit} />
               ))}
             </div>
           ) : (
@@ -29,4 +26,4 @@ function advPanel({ schema, loading, elapsedTime }) {
   );
 }
 
-export default advPanel;
+export default AdvPanel;

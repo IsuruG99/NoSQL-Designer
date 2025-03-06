@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { SchemaContext } from '../SchemaContext';
 
-function AdvCard({ entity }) {
+function AdvCard({ entity, onEdit }) {
     const { setSelectedEntity } = useContext(SchemaContext);
 
     if (!entity || !entity.Name || !entity.Attributes) {
@@ -9,11 +9,16 @@ function AdvCard({ entity }) {
         return <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-md">Invalid entity data</div>;
     }
 
+    const handleEditClick = () => {
+        setSelectedEntity(entity);
+        onEdit();
+    };
+
     return (
         <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] h-full border border-gray-700">
             <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-bold text-cyan-400">{entity.Name}</h3>
-                <button onClick={() => setSelectedEntity(entity)} className="px-4 py-2 bg-blue-500 text-white min-h-10 rounded">Edit</button>
+                <button onClick={handleEditClick} className="px-4 py-2 bg-blue-500 text-white min-h-10 rounded">Edit</button>
             </div>
             <hr className="border-gray-600 mb-2" />
             <ul className="text-sm space-y-1">

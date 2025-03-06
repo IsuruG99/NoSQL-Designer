@@ -80,7 +80,7 @@ function EditableCard() {
                 onClick={handleSave}
                 className="mt-2 ml-2 px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700"
             >
-                Save
+                Save (Does not work)
             </button>
         </div>
     );
@@ -97,7 +97,7 @@ function AttributeEditor({
     handleAttributeChange
 }) {
     return (
-        <li className="truncate flex items-center">
+        <li className="truncate flex items-center justify-between">
             <input
                 type="text"
                 value={editingKey === attributeKey ? tempEditingKey : attributeKey}
@@ -111,17 +111,19 @@ function AttributeEditor({
                     setEditingKey(null);
                     setTempEditingKey("");
                 }}
-                className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2"
+                className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2 flex-grow"
             />
-            <select
-                value={attributeValue}
-                onChange={(e) => handleAttributeChange(attributeKey, e.target.value)}
-                className="text-gray-300 bg-gray-700 border border-gray-600 rounded focus:outline-none"
-            >
-                {dataTypes.map((type) => (
-                    <option key={type} value={type}>{type}</option>
-                ))}
-            </select>
+            <div className="flex-shrink-0">
+                <select
+                    value={attributeValue}
+                    onChange={(e) => handleAttributeChange(attributeKey, e.target.value)}
+                    className="text-gray-300 bg-gray-700 border border-gray-600 rounded focus:outline-none"
+                >
+                    {dataTypes.map((type) => (
+                        <option key={type} value={type}>{type}</option>
+                    ))}
+                </select>
+            </div>
         </li>
     );
 }

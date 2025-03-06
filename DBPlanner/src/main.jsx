@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import './index.css';
 
 import Generate from './generate.jsx';
-import Editor from './editor.jsx'; // Import the new page component
+import Editor from './editor.jsx';
 import { SchemaProvider } from './SchemaContext.jsx';
 
 createRoot(document.getElementById('root')).render(
