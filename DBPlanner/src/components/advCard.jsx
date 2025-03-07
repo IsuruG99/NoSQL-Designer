@@ -18,39 +18,25 @@ function AdvCard({ entity, onEdit }) {
     };
 
     const renderAttribute = (key, value) => {
-        if (value.type === 'object') {
-            return (
-                <li key={key} className="truncate">
-                    <strong className="text-cyan-300">{key}:</strong>
+        const isObjectOrArray = value.type === 'object' || value.type === 'array';
+        const properties = value.type === 'object' ? value.properties : value.items?.properties;
+
+        return (
+            <li key={key} className="truncate">
+                <strong className="text-cyan-300">{key}:</strong>
+                <span className="text-gray-300"> {value.type}</span>
+                {isObjectOrArray && properties && (
                     <ul className="ml-4">
-                        {Object.entries(value.properties).map(([subKey, subValue]) => (
+                        {Object.entries(properties).map(([subKey, subValue]) => (
                             <li key={subKey} className="truncate">
-                                <strong className="text-cyan-300">{subKey}:</strong> <span className="text-gray-300">{subValue.type}</span>
+                                <strong className="text-cyan-300">{subKey}:</strong>
+                                <span className="text-gray-300"> {subValue.type}</span>
                             </li>
                         ))}
                     </ul>
-                </li>
-            );
-        } else if (value.type === 'array') {
-            return (
-                <li key={key} className="truncate">
-                    <strong className="text-cyan-300">{key}:</strong>
-                    <ul className="ml-4">
-                        {Object.entries(value.items.properties).map(([subKey, subValue]) => (
-                            <li key={subKey} className="truncate">
-                                <strong className="text-cyan-300">{subKey}:</strong> <span className="text-gray-300">{subValue.type}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </li>
-            );
-        } else {
-            return (
-                <li key={key} className="truncate">
-                    <strong className="text-cyan-300">{key}:</strong> <span className="text-gray-300">{value.type}</span>
-                </li>
-            );
-        }
+                )}
+            </li>
+        );
     };
 
     return (

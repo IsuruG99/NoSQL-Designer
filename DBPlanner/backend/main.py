@@ -74,48 +74,49 @@ STATIC_EXTENSIVE_SCHEMA = {
     "Orders": {
         "Name": "Orders",
         "Attributes": {
-            "OrderID": {"type": "string"},
-            "OrderTime": {"type": "timestamp"},
+            "OrderID": {"type": "string", "properties": {}},
+            "OrderTime": {"type": "timestamp", "properties": {}},
             "Items": {
                 "type": "array",
                 "items": {
                     "type": "object",
                     "properties": {
-                        "ItemID": {"type": "string"},
-                        "Quantity": {"type": "number"},
-                        "Price": {"type": "number"}
+                        "ItemID": {"type": "string", "properties": {}},
+                        "Quantity": {"type": "number", "properties": {}},
+                        "Price": {"type": "number", "properties": {}}
                     }
-                }
+                },
+                "properties": {}
             },
-            "Status": {"type": "string"},
-            "TotalPrice": {"type": "number"}
+            "Status": {"type": "string", "properties": {}},
+            "TotalPrice": {"type": "number", "properties": {}}
         }
     },
     "Salary": {
         "Name": "Salary",
         "Attributes": {
-            "SalaryID": {"type": "string"},
-            "StaffID": {"type": "string"},
-            "Amount": {"type": "number"},
-            "PaymentDate": {"type": "timestamp"}
+            "SalaryID": {"type": "string", "properties": {}},
+            "StaffID": {"type": "string", "properties": {}},
+            "Amount": {"type": "number", "properties": {}},
+            "PaymentDate": {"type": "timestamp", "properties": {}}
         }
     },
     "Staff": {
         "Name": "Staff",
         "Attributes": {
-            "StaffID": {"type": "string"},
-            "Name": {"type": "string"},
-            "PhoneNumber": {"type": "string"},
-            "Role": {"type": "string"},
-            "StartDate": {"type": "timestamp"},
-            "Status": {"type": "string"},
+            "StaffID": {"type": "string", "properties": {}},
+            "Name": {"type": "string", "properties": {}},
+            "PhoneNumber": {"type": "string", "properties": {}},
+            "Role": {"type": "string", "properties": {}},
+            "StartDate": {"type": "timestamp", "properties": {}},
+            "Status": {"type": "string", "properties": {}},
             "Address": {
                 "type": "object",
                 "properties": {
-                    "Street": {"type": "string"},
-                    "City": {"type": "string"},
-                    "State": {"type": "string"},
-                    "ZipCode": {"type": "string"}
+                    "Street": {"type": "string", "properties": {}},
+                    "City": {"type": "string", "properties": {}},
+                    "State": {"type": "string", "properties": {}},
+                    "ZipCode": {"type": "string", "properties": {}}
                 }
             }
         }
@@ -123,17 +124,17 @@ STATIC_EXTENSIVE_SCHEMA = {
     "MenuItems": {
         "Name": "MenuItems",
         "Attributes": {
-            "MenuItemID": {"type": "string"},
-            "Name": {"type": "string"},
-            "Description": {"type": "string"},
-            "Price": {"type": "number"},
-            "Category": {"type": "string"},
-            "Availability": {"type": "boolean"},
+            "MenuItemID": {"type": "string", "properties": {}},
+            "Name": {"type": "string", "properties": {}},
+            "Description": {"type": "string", "properties": {}},
+            "Price": {"type": "number", "properties": {}},
+            "Category": {"type": "string", "properties": {}},
+            "Availability": {"type": "boolean", "properties": {}},
             "Tags": {
                 "type": "object",
                 "properties": {
-                    "Cuisine": {"type": "string"},
-                    "SpicyLevel": {"type": "string"}
+                    "Cuisine": {"type": "string", "properties": {}},
+                    "SpicyLevel": {"type": "string", "properties": {}}
                 }
             }
         }

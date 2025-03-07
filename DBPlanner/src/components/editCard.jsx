@@ -20,8 +20,6 @@ function EditableCard({ handleCloseModal }) {
     const [attributes, setAttributes] = useState(tempSelectedEntity?.Attributes || {});
     const [tempAttributes, setTempAttributes] = useState(attributes);
     const [tempKeys, setTempKeys] = useState(Object.keys(tempAttributes));
-    const [editingKey, setEditingKey] = useState(null);
-    const [tempEditingKey, setTempEditingKey] = useState("");
 
     useEffect(() => {
         setEntityName(tempSelectedEntity?.Name || "");
@@ -31,109 +29,48 @@ function EditableCard({ handleCloseModal }) {
     }, [tempSelectedEntity]);
 
     const handleNameChange = (e) => {
-        const newName = e.target.value;
-        if (newName.trim() !== "" && !/^\d/.test(newName)) {
-            setEntityName(newName);
-            setTempSelectedEntity({ ...tempSelectedEntity, Name: newName });
-        }
+        console.log(`recieved name: ${e.target.value}`);
+        setEntityName(e.target.value);
+        setTempSelectedEntity({ ...tempSelectedEntity, Name: e.target.value });
     };
 
     const handleAttributeChange = (keyPath, value) => {
-        const keys = keyPath.split('.');
         const updatedAttributes = { ...tempAttributes };
-        let nestedAttributes = updatedAttributes;
-    
-        for (let i = 0; i < keys.length - 1; i++) {
-            const key = keys[i];
-            if (!nestedAttributes[key]) {
-                nestedAttributes[key] = { type: 'object', properties: {} };
-            }
-            nestedAttributes = nestedAttributes[key].properties;
+
+        if ((typeof value === 'object' || typeof value === "array") && value !== null) {
+            updatedAttributes[keyPath] = value;
+        } else {
+            updatedAttributes[keyPath].type = value;
         }
-    
-        const lastKey = keys[keys.length - 1];
-        nestedAttributes[lastKey] = value;
-    
+
         setTempAttributes(updatedAttributes);
         setTempSelectedEntity({ ...tempSelectedEntity, Attributes: updatedAttributes });
-    };
-    
-
-    const handleAddAttribute = () => {
-        const newKey = `NewAttribute${Object.keys(tempAttributes).length + 1}`;
-        const updatedAttributes = { ...tempAttributes, [newKey]: "string" };
-        setTempAttributes(updatedAttributes);
-        setTempKeys([...tempKeys, newKey]);
-        setTempSelectedEntity({ ...tempSelectedEntity, Attributes: updatedAttributes });
-    };
-
-    const handleAddSubAttribute = (keyPath) => {
-        pass; //we will not bother with this, it is not handled and will not be looked at for near future.
-    };
-
-    const handleKeyChange = (keyPath, newKey) => {
-        if (newKey.trim() !== "" && !/^\d/.test(newKey)) {
-            const keys = keyPath.split('.');
-            const lastKey = keys.pop();
-            let nestedAttributes = tempAttributes;
-    
-            keys.forEach(k => {
-                if (!nestedAttributes[k]) {
-                    nestedAttributes[k] = { properties: {} };
-                } else if (!nestedAttributes[k].properties) {
-                    nestedAttributes[k].properties = {};
-                }
-                nestedAttributes = nestedAttributes[k].properties;
-            });
-    
-            if (nestedAttributes.hasOwnProperty(newKey)) {
-                alert("An attribute with this name already exists.");
-                return;
-            }
-    
-            const value = nestedAttributes[lastKey];
-            delete nestedAttributes[lastKey];
-            nestedAttributes[newKey] = value;
-    
-            setTempAttributes({ ...tempAttributes });
-            setTempSelectedEntity({ ...tempSelectedEntity, Attributes: { ...tempAttributes } });
-        }
     };
 
     const handleSave = () => {
         try {
-            // Ensure all session variables are intact
             if (!schema || !tempSelectedEntity || !originalSelectedEntity) {
                 throw new Error("Session variables are missing.");
             }
-    
-            // Ensure schema is an object
-            if (typeof schema !== 'object' || Array.isArray(schema)) {
+
+            if (typeof schema !== 'object') {
                 throw new Error("Schema is not an object.");
             }
-    
-            // Create a copy of the schema
+
             const updatedSchema = { ...schema };
-    
-            // Remove the original selected entity from the schema
+
             if (updatedSchema.hasOwnProperty(originalSelectedEntity.Name)) {
                 delete updatedSchema[originalSelectedEntity.Name];
             } else {
                 throw new Error("Original selected entity not found in schema.");
             }
-    
-            // Append the temp selected entity to the schema
+
             updatedSchema[tempSelectedEntity.Name] = tempSelectedEntity;
-    
-            // Update the schema state
+
             setSchema(updatedSchema);
-    
-            // Clear original and temp selected entities
             setOriginalSelectedEntity(null);
             setTempSelectedEntity(null);
             setSelectedEntity(null);
-    
-            // Close the modal
             handleCloseModal();
         } catch (error) {
             console.error("Failed to save changes:", error);
@@ -141,141 +78,81 @@ function EditableCard({ handleCloseModal }) {
         }
     };
 
-    const renderAttributeEditor = (key, value, keyPath = key) => {
-        console.log("Rendering attribute editor for:", key, value, keyPath);
-        if (typeof value === 'object' && value !== null) {
-            if (value.type === 'object' && value.properties) {
-                return (
-                    <li key={keyPath} className="truncate">
-                        <div className="flex items-center">
-                            <input
-                                type="text"
-                                value={editingKey === keyPath ? tempEditingKey : key}
-                                onChange={(e) => {
-                                    const newKey = e.target.value;
-                                    setTempEditingKey(newKey);
-                                    setEditingKey(keyPath);
-                                }}
-                                onBlur={() => {
-                                    if (editingKey === keyPath) {
-                                        handleKeyChange(keyPath, tempEditingKey);
-                                        setEditingKey(null);
-                                        setTempEditingKey("");
-                                    }
-                                }}
-                                className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2"
-                            />
-                            <span className="text-cyan-300 mr-2">:</span>
-                            <span className="text-gray-300">object</span>
-                        </div>
-                        <ul className="ml-4">
-                            {Object.entries(value.properties).map(([subKey, subValue]) => 
-                                renderAttributeEditor(subKey, subValue, `${keyPath}.properties.${subKey}`)
-                            )}
-                        </ul>
-                    </li>
-                );
-            }
-        } else {
-            return (
-                <AttributeEditor
-                    key={keyPath}
-                    attributeKey={key}
-                    attributeValue={value}
-                    keyPath={keyPath}
-                    editingKey={editingKey}
-                    tempEditingKey={tempEditingKey}
-                    setEditingKey={setEditingKey}
-                    setTempEditingKey={setTempEditingKey}
-                    handleKeyChange={handleKeyChange}
-                    handleAttributeChange={handleAttributeChange}
-                    handleAddSubAttribute={handleAddSubAttribute}
-                />
-            );
-        }
-    };
-
     return (
-        <div>
-            <h2>Edit Entity: {entityName}</h2>
+        <div className="w-full h-full p-4 bg-gray-800 rounded-lg shadow-lg">
             <input
                 type="text"
                 value={entityName}
                 onChange={handleNameChange}
-                className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2"
+                className="text-xl font-bold bg-transparent mb-4 w-full"
             />
-            <ul>
-                {tempKeys.map((key) => renderAttributeEditor(key, tempAttributes[key]))}
+            <hr className="border-gray-600 mb-4" />
+            <ul className="space-y-2">
+                {tempKeys.map((key) => (
+                    <AttributeEditor
+                        key={key}
+                        attributeKey={key}
+                        attributeValue={tempAttributes[key]}
+                        onAttributeChange={handleAttributeChange}
+                    />
+                ))}
             </ul>
-            <button onClick={handleAddAttribute}>Add Attribute</button>
-            <button onClick={handleSave}>Save</button>
-            <button onClick={handleCloseModal}>Cancel</button>
+            <hr className="border-gray-600 my-4" />
+            <div className="flex justify-end space-x-2">
+                <button
+                    onClick={handleSave}
+                    className="px-4 py-2 bg-green-800 text-white rounded hover:bg-green-700"
+                >
+                    Save
+                </button>
+                <button
+                    onClick={handleCloseModal}
+                    className="px-4 py-2 bg-red-800 text-white rounded hover:bg-red-700"
+                >
+                    Cancel
+                </button>
+            </div>
         </div>
     );
 }
 
-function AttributeEditor({
-    attributeKey,
-    attributeValue,
-    keyPath,
-    editingKey,
-    tempEditingKey,
-    setEditingKey,
-    setTempEditingKey,
-    handleKeyChange,
-    handleAttributeChange,
-    handleAddSubAttribute // Add this prop
-}) {
-    const isFirstLevel = keyPath.split('.').length === 1;
-    const isObjectType = attributeValue && attributeValue.type === 'object';
+function AttributeEditor({ attributeKey, attributeValue, onAttributeChange }) {
+    const handleSubAttributeChange = (subKey, value) => {
+        const updatedProperties = { ...attributeValue.properties };
+        updatedProperties[subKey].type = value;
+        onAttributeChange(attributeKey, { ...attributeValue, properties: updatedProperties });
+    };
 
     return (
-        <li className="truncate flex items-center justify-between hover:bg-gray-700 p-1 rounded relative">
-            <div className="flex items-center flex-grow">
-                <input
-                    type="text"
-                    value={editingKey === keyPath ? tempEditingKey : attributeKey}
-                    onChange={(e) => {
-                        const newKey = e.target.value;
-                        setTempEditingKey(newKey);
-                        setEditingKey(keyPath);
-                    }}
-                    onBlur={() => {
-                        if (editingKey === keyPath) {
-                            handleKeyChange(keyPath, tempEditingKey);
-                            setEditingKey(null);
-                            setTempEditingKey("");
-                        }
-                    }}
-                    className="text-cyan-300 bg-transparent border-none focus:outline-none mr-2"
-                />
-                <span className="text-cyan-300 mr-2">:</span>
-                <select
-                    value={attributeValue?.type || attributeValue}
-                    onChange={(e) => handleAttributeChange(keyPath, e.target.value)}
-                    className="text-gray-300 bg-gray-700 border border-gray-600 rounded focus:outline-none"
-                >
-                    {dataTypes.map((type) => (
-                        <option key={type} value={type}>{type}</option>
+        <li className="truncate ml-4 hover:bg-gray-700 p-1 rounded">
+            <span className="text-white">{attributeKey}</span>
+            <select
+                value={attributeValue.type}
+                onChange={(e) => {
+                    console.log(`Changing attribute ${attributeKey} to type ${e.target.value}`);
+                    onAttributeChange(attributeKey, e.target.value);
+                }}
+                className="ml-2 bg-gray-700 text-white rounded"
+            >
+                {dataTypes.map((type) => (
+                    <option key={type} value={type}>
+                        {type}
+                    </option>
+                ))}
+            </select>
+
+            {attributeValue.properties && Object.keys(attributeValue.properties).length > 0 && (
+                <ul className="ml-4 mt-2 space-y-1">
+                    {Object.keys(attributeValue.properties).map((subKey) => (
+                        <AttributeEditor
+                            key={subKey}
+                            attributeKey={subKey}
+                            attributeValue={attributeValue.properties[subKey]}
+                            onAttributeChange={(key, value) => handleSubAttributeChange(key, value)}
+                        />
                     ))}
-                </select>
-            </div>
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
-                {isFirstLevel && isObjectType && (
-                    <button
-                        className="text-white-500 text-sm hover:text-blue-500"
-                        onClick={() => handleAddSubAttribute(keyPath)}
-                    >
-                        Sub
-                    </button>
-                )}
-                <button
-                    className="text-white-500 text-xl hover:text-red-700"
-                    onClick={() => { /* handleDeleteAttribute(keyPath) */ }}
-                >
-                    X
-                </button>
-            </div>
+                </ul>
+            )}
         </li>
     );
 }
