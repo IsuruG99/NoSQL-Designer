@@ -166,7 +166,7 @@ function EditableCard({ handleCloseModal }) {
                 className="text-xl font-bold bg-transparent mb-4 w-full"
             />
             <hr className="border-gray-600 mb-4" />
-            <ul className="">
+            <ul className="flex flex-col justify-center mx-auto">
                 {tempKeys.map((key) => (
                     <AttributeEditor
                         key={key}
@@ -266,28 +266,33 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
 
     return (
         <li className="truncate ml-4 hover:bg-gray-700 p-1 rounded">
-            <input
-                type="text"
-                value={keyName}
-                onChange={handleKeyNameChange}
-                className="bg-transparent text-white mr-2"
-            />
-            <select
-                value={localAttributeValue.type}
-                onChange={handleTypeChange}
-                className="ml-2 bg-gray-700 text-white rounded"
-            >
-                {dataTypes.map((type) => (
-                    <option key={type} value={type}>
-                        {type}
-                    </option>
-                ))}
-            </select>
-            <div className="flex justify-end items-center space-x-2">
-                <button onClick={handleDelete} className="px-2 py-1 bg-red-800 text-white rounded hover:bg-red-700">Del</button>
-                <button onClick={handleAdd} className="px-2 py-1 bg-blue-800 text-white rounded hover:bg-blue-700">Add</button>
-                <button onClick={handleSave} className="px-2 py-1 bg-green-800 text-white rounded hover:bg-green-700">Save</button>
+            <div className="flex items-center">
+                <div className="flex items-center space-x-2 justify-center">
+                    <input
+                        type="text"
+                        value={keyName}
+                        onChange={handleKeyNameChange}
+                        className="bg-transparent text-white mr-2 flex-grow"
+                    />
+                    <select
+                        value={localAttributeValue.type}
+                        onChange={handleTypeChange}
+                        className="ml-2 bg-gray-700 text-white rounded flex-grow"
+                    >
+                        {dataTypes.map((type) => (
+                            <option key={type} value={type}>
+                                {type}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                <div className="flex space-x-3 ml-auto">
+                    <button onClick={handleDelete} className="px-2 py-1 text-white rounded hover:text-red-400">Del</button>
+                    <button onClick={handleAdd} className="px-2 py-1 text-white rounded hover:text-cyan-400">Add</button>
+                    <button onClick={handleSave} className="px-2 py-1 text-white rounded hover:text-green-400">Save</button>
+                </div>
             </div>
+
 
             {localAttributeValue.properties && Object.keys(localAttributeValue.properties).length > 0 && (
                 <ul className="ml-4 mt-2 space-y-1">
