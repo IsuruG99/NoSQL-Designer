@@ -15,6 +15,11 @@ const Editor = () => {
         setTempSelectedEntity(null);
     };
 
+    const handleAddCard = () => {
+        setTempSelectedEntity({ Name: '', Attributes: {} });
+        handleOpenModal();
+    };
+
     return (
         <div className="flex flex-col items-center w-full min-h-screen h-full">
             <div className="editor w-full max-w-4xl space-y-4 h-full">
@@ -24,7 +29,7 @@ const Editor = () => {
                     </Modal>
                 )}
             </div>
-            <AdvPanel schema={schema} loading={false} elapsedTime={0} onEdit={handleOpenModal} className="w-full" />
+            <AdvPanel schema={schema} loading={false} elapsedTime={0} onEdit={handleOpenModal} onAdd={handleAddCard} className="w-full" />
         </div>
     );
 };

@@ -1,21 +1,21 @@
 Current plan
 
-Session Variable Implementation.
-1. Fix the Header to a nav bar, with Generate / Design / Export tabs (Done entirely using main.jsx).
-2. Req Session Variables={
-    1. Generated schema (currently stored in SchemaContext).
-    2. Original selected Card & temp selected Card (if user opened the modal for edit card).}.
+Backend Functionality
+1. None for now
 
 Designer Functionality
-1. Save edited card (utilizing original selec. card and temp selec. card session variables).
-2. Add a + Card for adding new cards to schema (again, using session variables)
+1. Add Card function
+2. Add Attribute function
+- Only show Add for base level attributes
 
 Additional Functionality
--1. maket he card inner scroll not affect title and edit buttons.
-0. Sub attribute add option on Hover
-1. Search
-2. Make advPanel a visible GRID
-3. Drag N Drop
+1. Editor Page ideas
+- Search
+- Visible Grid
+- Drag N Drop
+- Card Inner Scroll only affect attributes (freezepane the title)
 
+Card Editor Ideas
+- Attribute buttons only show on hover?
 
 

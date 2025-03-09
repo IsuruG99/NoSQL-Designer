@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { SchemaContext } from '../SchemaContext';
-import './customScrollbar.css'; // Import the custom scrollbar CSS
+import './customScrollbar.css';
 
 const dataTypes = [
     "string",
@@ -29,7 +29,6 @@ function EditableCard({ handleCloseModal }) {
     }, [tempSelectedEntity]);
 
     const handleNameChange = (e) => {
-        console.log(`handleNameChange was called, value: ${e.target.value}`);
         setEntityName(e.target.value);
         setTempSelectedEntity({ ...tempSelectedEntity, Name: e.target.value });
     };
@@ -40,7 +39,6 @@ function EditableCard({ handleCloseModal }) {
     };
 
     const handleAttributeChange = (keyPath, value) => {
-        console.log(`handleAttributeChange was called, keyPath: ${keyPath}, value: ${value}`);
         const updatedAttributes = { ...tempAttributes };
 
         if (typeof value === 'object' && value !== null) {
@@ -57,7 +55,6 @@ function EditableCard({ handleCloseModal }) {
     };
 
     const handleSubAttributeChange = (keyPath, subKey, value) => {
-        console.log(`handleSubAttributeChange was called, keyPath: ${keyPath}, subKey: ${subKey}, value: ${value}`);
         const updatedAttributes = { ...tempAttributes };
 
         if (!updatedAttributes[keyPath].properties) {
@@ -78,7 +75,6 @@ function EditableCard({ handleCloseModal }) {
     };
 
     const handleSubKeyChange = (keyPath, oldKey, newKey) => {
-        console.log(`handleSubKeyChange was called, keyPath: ${keyPath}, oldKey: ${oldKey}, newKey: ${newKey}`);
         const updatedAttributes = { ...tempAttributes };
 
         if (updatedAttributes[keyPath].properties.hasOwnProperty(newKey) && oldKey !== newKey) {
@@ -113,7 +109,6 @@ function EditableCard({ handleCloseModal }) {
     };
 
     const handleDelete = (key) => {
-        console.log(`handleDelete was called, key: ${key}`);
         const updatedAttributes = { ...tempAttributes };
         delete updatedAttributes[key];
 
@@ -142,9 +137,6 @@ function EditableCard({ handleCloseModal }) {
             }
 
             updatedSchema[tempSelectedEntity.Name] = tempSelectedEntity;
-            console.log("Updated schema's Name: ", updatedSchema[tempSelectedEntity.Name].Name);
-            console.log("Updated schema's Attributes: ", updatedSchema[tempSelectedEntity.Name].Attributes);
-            console.log("tempSelectedEntity: ", tempSelectedEntity);
 
             setSchema(updatedSchema);
             setOriginalSelectedEntity(null);
@@ -152,7 +144,6 @@ function EditableCard({ handleCloseModal }) {
             setSelectedEntity(null);
             handleCloseModal();
         } catch (error) {
-            console.error("Failed to save changes:", error);
             alert(error.message);
         }
     };
@@ -204,7 +195,6 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
     const [localAttributeValue, setLocalAttributeValue] = useState(attributeValue);
 
     const handleSubAttributeChange = (subKey, value) => {
-        console.log(`AtrEditor's subAttributeChange was called, subKey: ${subKey}, value: ${value}`);
         const updatedProperties = { ...localAttributeValue.properties };
 
         if (typeof value === 'object' && value !== null) {
@@ -222,7 +212,6 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
     };
 
     const handleSubKeyChange = (oldKey, newKey) => {
-        console.log(`AtrEditor's subKeyChange was called, oldKey: ${oldKey}, newKey: ${newKey}`);
         if (newKey === "type" || newKey === "properties") {
             alert("Cannot rename 'type' or 'properties'");
             return;
@@ -237,17 +226,14 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
     };
 
     const handleKeyNameChange = (e) => {
-        console.log(`AtrEditor's keyNameChange was called, value: ${e.target.value}`);
         setKeyName(e.target.value);
     };
 
     const handleTypeChange = (e) => {
-        console.log(`AtrEditor's typeChange was called, value: ${e.target.value}`);
         setLocalAttributeValue({ ...localAttributeValue, type: e.target.value });
     };
 
     const handleDelete = () => {
-        console.log(`AtrEditor's handleDelete was called, attributeKey: ${attributeKey}`);
         onDelete(attributeKey);
     };
 
@@ -256,7 +242,6 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
     };
 
     const handleSave = () => {
-        console.log(`attribute key new ${keyName} and ${attributeKey}`);
         if (keyName !== attributeKey) {
             onKeyChange(attributeKey, keyName);
         } else {

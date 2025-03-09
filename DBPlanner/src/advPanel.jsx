@@ -1,7 +1,7 @@
 import React from 'react';
 import AdvCard from './components/advCard.jsx';
 
-function AdvPanel({ schema, loading, elapsedTime, onEdit }) {
+function AdvPanel({ schema, loading, elapsedTime, onEdit, onAdd }) {
   return (
     <div className="panel flex flex-col p-4 min-h-screen h-full mx-10 mt-10">
       <h2 className="text-white text-xl mb-2 text-center">Drawing Panel</h2>
@@ -15,10 +15,10 @@ function AdvPanel({ schema, loading, elapsedTime, onEdit }) {
                 <AdvCard key={index} entity={schema[key]} onEdit={onEdit} />
               ))}
               <div
-                onClick={() => {}}
+                onClick={onAdd}
                 className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[200px] min-h-[300px] border border-dotted border-gray-500 flex items-center justify-center cursor-pointer"
               >
-                <span className="text-7xl text-cyan-400">+</span>
+                <span className="add-card text-7xl text-cyan-400">+</span>
               </div>
             </div>
           ) : (
