@@ -4,7 +4,7 @@ Backend Functionality
 1. None for now
 
 Designer Functionality
-1. Add Card function
+1. Add Card function (Basics Set up)
 2. Add Attribute function
 - Only show Add for base level attributes
 
@@ -19,3 +19,5 @@ Card Editor Ideas
 - Attribute buttons only show on hover?
 
 
+last change
+-was implementing add card function, not sure what i was doing though

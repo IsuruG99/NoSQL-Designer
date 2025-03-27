@@ -46,7 +46,7 @@ function Generate() {
 
   return (
     <div className="flex flex-col items-center w-full h-full ">
-      <div className="input h-full w-full max-w-7xl space-y-4 mt-5 mx-20">
+      <div className="h-full max-w-9xl space-y-4 mt-5 sm:w-150 md:w-150 lg:w-200 xl:w-300">
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -68,17 +68,17 @@ function Generate() {
         <button
           onClick={handleGenerate}
           disabled={loading}
-          className="w-full p-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 rounded-lg font-semibold"
+          className="w-full p-3 bg-blue-600 rounded-lg font-semibold hover:bg-blue-700 border-blue-800 border-b-4"
         >
           Generate
         </button>
       </div>
 
-      <Panel schema={schema} loading={loading} elapsedTime={elapsedTime} className="w-full" />
+      <Panel schema={schema} loading={loading} elapsedTime={elapsedTime} className="sm:w-150 md:w-150 lg:w-200 xl:w-300" />
       {generated && (
         <button
           onClick={() => navigate("/editor")}
-          className="mt-4 p-3 bg-cyan-600 hover:bg-cyan-600 rounded-lg font-semibold"
+          className="mt-4 p-3 bg-cyan-600 hover:bg-cyan-600 rounded-lg font-semibold border-cyan-800 border-b-3"
         >
           Move to Detailed View?
         </button>

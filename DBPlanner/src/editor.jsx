@@ -7,16 +7,19 @@ import Modal from './components/Modal.jsx';
 const Editor = () => {
     const { schema, selectedEntity, setOriginalSelectedEntity, setTempSelectedEntity } = useContext(SchemaContext);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isNewCard, setIsNewCard] = useState(false);
 
     const handleOpenModal = () => setIsModalOpen(true);
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setOriginalSelectedEntity(null);
         setTempSelectedEntity(null);
+        setIsNewCard(false);
     };
 
     const handleAddCard = () => {
         setTempSelectedEntity({ Name: '', Attributes: {} });
+        setIsNewCard(true);
         handleOpenModal();
     };
 
@@ -25,7 +28,7 @@ const Editor = () => {
             <div className="editor w-full max-w-4xl space-y-4 h-full">
                 {selectedEntity && (
                     <Modal isOpen={isModalOpen} onClose={handleCloseModal}>
-                        <EditableCard handleCloseModal={handleCloseModal} />
+                        <EditableCard handleCloseModal={handleCloseModal} isNewCard={isNewCard} />
                     </Modal>
                 )}
             </div>
