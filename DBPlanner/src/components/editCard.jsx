@@ -180,6 +180,17 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         onDelete={handleDelete}
                     />
                 ))}
+                <button 
+                    onClick={() => {
+                        const newKey = `newAttribute${tempKeys.length + 1}`;
+                        const updatedAttributes = { ...tempAttributes };
+                        updatedAttributes[newKey] = { type: "string", properties: {} };
+                        updateAttributes(updatedAttributes);
+                    }}
+                    className="text-white hover:text-cyan-400 text-xl mt-2 mx-5 flex items-center "
+                >
+                    Add Attribute
+                </button>
             </ul>
             <hr className="border-gray-600 my-4" />
             <div className="flex justify-end space-x-2">
@@ -187,7 +198,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                     onClick={handleSave}
                     className="px-4 py-2 text-white rounded bg-green-600 hover:bg-green-700 border-green-800 border-b-3"
                 >
-                    Save
+                    Update
                 </button>
                 <button
                     onClick={handleCloseModal}
@@ -203,6 +214,9 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSubAttributeChange, onKeyChange, onSubKeyChange, onDelete }) {
     const [keyName, setKeyName] = useState(attributeKey);
     const [localAttributeValue, setLocalAttributeValue] = useState(attributeValue);
+
+    // Check if this is a sub-attribute by looking for dots in the key
+    const isSubAttribute = attributeKey.includes('.');
 
     const handleSubAttributeChange = (subKey, value) => {
         const updatedProperties = { ...localAttributeValue.properties };
@@ -247,8 +261,18 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
         onDelete(attributeKey);
     };
 
-    const handleAdd = () => {
-        // TODO: New Attr
+    const handleAddSubAttribute = () => {
+        if (localAttributeValue.type === "object" || localAttributeValue.type === "array") {
+            // For objects, we add directly to properties
+            const newKey = `newSubAttribute${Object.keys(localAttributeValue.properties).length + 1}`;
+            localAttributeValue.properties[newKey] = {
+                type: "string",
+                properties: {}
+            };
+        }
+
+        setLocalAttributeValue({ ...localAttributeValue });
+        onAttributeChange(attributeKey, localAttributeValue);
     };
 
     const handleSave = () => {
@@ -260,7 +284,7 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
     };
 
     return (
-        <li className="truncate ml-4 hover:bg-gray-700 p-1 rounded">
+        <li className="truncate ml-4 hover:bg-gray-700 p-1 rounded group">
             <div className="flex items-center">
                 <div className="flex items-center space-x-2 justify-center">
                     <input
@@ -281,10 +305,13 @@ function AttributeEditor({ attributeKey, attributeValue, onAttributeChange, onSu
                         ))}
                     </select>
                 </div>
-                <div className="flex space-x-3 ml-auto">
-                    <button onClick={handleDelete} className="px-2 py-1 text-white rounded hover:text-red-400">Del</button>
-                    <button onClick={handleAdd} className="px-2 py-1 text-white rounded hover:text-cyan-400">Add</button>
-                    <button onClick={handleSave} className="px-2 py-1 text-white rounded hover:text-green-400">Save</button>
+                <div className="flex space-x-3 ml-auto opacity-0 group-hover:opacity-100 transition-opacity">
+                    
+                    {(localAttributeValue.type === "array" || localAttributeValue.type === "object") && !isSubAttribute && (
+                        <button onClick={handleAddSubAttribute} className="px-2 py-1 text-white rounded hover:text-cyan-400 text-xl">+</button>
+                    )}
+                    <button onClick={handleSave} className="px-2 py-1 text-white rounded hover:text-green-400">✓</button>
+                    <button onClick={handleDelete} className="px-2 py-1 text-white rounded hover:text-red-400">✕</button>
                 </div>
             </div>
 

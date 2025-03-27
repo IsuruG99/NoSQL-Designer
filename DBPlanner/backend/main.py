@@ -20,57 +20,7 @@ class SchemaRequest(BaseModel):
     constraints: str = ""
 
 # Example Static Schema till UI is ready
-STATIC_SCHEMA = {
-    "Orders": {
-        "Name": "Orders",
-        "Attributes": {
-            "OrderID": "string",
-            "OrderTime": "timestamp",
-            "Items": "array",
-            "Status": "string",
-            "TotalPrice": "number"
-        }
-    },
-    "Salary": {
-        "Name": "Salary",
-        "Attributes": {
-            "SalaryID": "string",
-            "StaffID": "string",
-            "Amount": "number",
-            "PaymentDate": "timestamp"
-        }
-    },
-    "Staff": {
-        "Name": "Staff",
-        "Attributes": {
-            "StaffID": "string",
-            "Name": "string",
-            "PhoneNumber": "string",
-            "Role": "string",
-            "StartDate": "timestamp",
-            "Status": "string"
-        }
-    },
-    "MenuItems": {
-        "Name": "MenuItems",
-        "Attributes": {
-            "MenuItemID": "string",
-            "Name": "string",
-            "Description": "string",
-            "Price": "number",
-            "Category": "string",
-            "Availability": "boolean"
-        },
-    },
-    "Test6": {
-        "Name": "5th Item",
-        "Attributes": {
-            "Testing": "string",
-            "123": "number"
-        }
-    }
-}
-STATIC_EXTENSIVE_SCHEMA = {
+STATIC_EXAMPLE_SCHEMA = {
     "Orders": {
         "Name": "Orders",
         "Attributes": {
@@ -146,7 +96,7 @@ def generate_schema(data: SchemaRequest):
     if not data.description:
         raise HTTPException(status_code=400, detail="Description is mandatory.")
     
-    return STATIC_EXTENSIVE_SCHEMA
+    return STATIC_EXAMPLE_SCHEMA
 
 # Root Endpoint
 @app.get("/")
