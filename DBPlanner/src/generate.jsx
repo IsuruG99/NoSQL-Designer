@@ -5,9 +5,9 @@ import Panel from "./basicPanel.jsx";
 
 function Generate() {
   const [formData, setFormData] = useState({
-    description: "",
-    entities: "",
-    constraints: ""
+    description: "A simple coffee shop",
+    entities: "staff, orders, ingredients",
+    constraints: "don't store OrderID"
   });
   const [loading, setLoading] = useState(false);
   const [elapsedTime, setElapsedTime] = useState(0);
@@ -58,6 +58,7 @@ function Generate() {
       console.log(`API call took ${endTime - startTime}ms`);
 
       if (data.schema) {
+        console.log("Received schema:", data.schema);
         setSchema(data.schema);
         setGenerated(true);
       } else {

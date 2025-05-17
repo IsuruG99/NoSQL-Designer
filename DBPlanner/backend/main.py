@@ -1,10 +1,10 @@
 import json
 import asyncio
+import aiohttp
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from returnToken import return_token
-import httpx
 from typing import Optional
 
 app = FastAPI()
@@ -18,9 +18,50 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# API Configuration
-API_URL = "https://api-inference.huggingface.co/models/deepseek-ai/DeepSeek-R1-Distill-Qwen-32B"
-headers = {"Authorization": f"Bearer {return_token()}"}
+async def invoke_chute(prompt: str) -> str:
+    api_token = return_token()
+    headers = {
+        "Authorization": "Bearer " + api_token,
+        "Content-Type": "application/json"
+    }
+    body = {
+        "model": "deepseek-ai/DeepSeek-V3-0324",
+        "messages": [{"role": "user", "content": prompt}],
+        "stream": True,
+        "max_tokens": 4096,
+        "temperature": 0.7
+    }
+
+    full_response = []
+    async with aiohttp.ClientSession() as session:
+        async with session.post(
+            "https://llm.chutes.ai/v1/chat/completions",
+            headers=headers,
+            json=body
+        ) as response:
+            async for line in response.content:
+                if line.startswith(b"data: "):
+                    data = line[6:].decode("utf-8").strip()
+                    if data == "[DONE]":
+                        break
+                    try:
+                        chunk = json.loads(data)
+                        if "choices" in chunk and len(chunk["choices"]) > 0:
+                            content = chunk["choices"][0].get("delta", {}).get("content", "")
+                            if content:
+                                full_response.append(content)
+                    except json.JSONDecodeError:
+                        continue
+    
+    # Join all content pieces and clean up whitespace
+    clean_response = "".join(full_response)
+    
+    # Replace sequences of 3+ newlines with just 2 newlines
+    import re
+    clean_response = re.sub(r'\n{3,}', '\n\n', clean_response)
+    
+    # Remove leading/trailing whitespace
+    return clean_response.strip()
 
 class SchemaRequest(BaseModel):
     description: str
@@ -51,105 +92,39 @@ EXAMPLE_SCHEMA = {
     }
 }
 
-async def wait_for_response_with_timeout(prompt: str):
-    """Wait for API response with 60s timeout before falling back"""
-    try:
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            response = await client.post(
-                API_URL,
-                headers=headers,
-                json={
-                    "inputs": prompt,
-                    "parameters": {
-                        "temperature": 0.1,
-                        "max_new_tokens": 300,
-                        "do_sample": False
-                    }
-                }
-            )
-            response.raise_for_status()
-            return response.json()
-    except (httpx.ReadTimeout, httpx.ConnectTimeout):
-        return None  # Signal timeout occurred
-    except Exception:
-        return None  # Signal other failure
-
 @app.post("/generate-schema")
 async def generate(data: SchemaRequest):
     if not data.description:
         raise HTTPException(status_code=400, detail="Description is mandatory.")
 
-    old_prompt = (
-        "ONLY OUTPUT JSON. Follow this exact format:\n"
-        f"{json.dumps(EXAMPLE_SCHEMA, indent=2)}\n\n"
-        f"Description: {data.description}\n"
-        f"Entities: {data.entities or 'none'}\n"
-        "Rules:\n"
-        "- Only use field names: OrderID, OrderTime, Items, Status, TotalPrice\n"
-        "- Items must contain: ItemID, Quantity, Price\n"
-        "- Only output the JSON object, no other text\n"
-    )
-
     prompt = (
-        "Generate a NoSQL collection schema in JSON format with these requirements:\n"
-        "1. MUST follow this structural format (field types and nesting):\n"
+        "Generate a NoSQL collection schema in JSON format based on these requirements:\n"
+        f"Description: {data.description}\n"
+        f"Entities: {data.entities or 'none'}\n\n"
+        "STRICT RULES:\n"
+        "1. MUST use this exact format:\n"
         f"{json.dumps(EXAMPLE_SCHEMA, indent=2)}\n\n"
-        "2. Based on this description: {data.description}\n"
-        f"3. Relevant entities: {data.entities or 'none'}\n\n"
-        "RULES:\n"
-        "- Maintain the exact same attribute structure (type/properties)\n"
-        "- Arrays must specify 'items' type like the example\n"
-        "- Objects must specify 'properties' like the example\n"
-        "- Use appropriate field names for the domain\n"
-        "- Only output raw JSON\n\n"
-        "Field type guidelines:\n"
-        "- string: For text/IDs\n"
-        "- number: For prices/quantities\n"
-        "- timestamp: For dates/times\n"
-        "- array: For lists\n"
-        "- object: For nested structures"
+        "2. Only output raw JSON (no Markdown, no code fences)\n"
+        "3. Maintain all field types and nesting structures\n"
+        "4. Include only these fields: OrderID, OrderTime, Items, Status, TotalPrice"
     )
 
     try:
-        # Start both the API call and a timer
-        api_task = asyncio.create_task(wait_for_response_with_timeout(prompt))
-        timer_task = asyncio.create_task(asyncio.sleep(60))
-
-        # Wait for either the API response or timeout
-        done, pending = await asyncio.wait(
-            {api_task, timer_task},
-            return_when=asyncio.FIRST_COMPLETED
-        )
-
-        # Cancel whichever task didn't complete
-        for task in pending:
-            task.cancel()
-
-        # Process results
-        if api_task in done and not api_task.cancelled():
-            response_data = api_task.result()
-            if response_data is not None:  # Got valid response
-                raw_output = (
-                    response_data[0]["generated_text"] 
-                    if isinstance(response_data, list) 
-                    else response_data.get("generated_text", "")
-                )
-                
-                try:
-                    json_str = raw_output[raw_output.find('{'):raw_output.rfind('}')+1]
-                    result = json.loads(json_str)
-                    return {"schema": result}
-                except:
-                    pass
-
-        # Calculate remaining time to sleep
-        remaining_time = max(0, 60 - (asyncio.get_event_loop().time() % 60))
-        await asyncio.sleep(remaining_time)
-        return {"schema": EXAMPLE_SCHEMA}
-
+        raw_json = await invoke_chute(prompt)
+        
+        # Extract just the JSON content if needed (double-safe)
+        try:
+            # First try parsing directly (for clean JSON)
+            result = json.loads(raw_json)
+            return {"schema": result}
+        except json.JSONDecodeError:
+            # Fallback: extract between curly braces if there's extra text
+            json_str = raw_json[raw_json.find('{'):raw_json.rfind('}')+1]
+            return {"schema": json.loads(json_str)}
+            
     except Exception as e:
-        await asyncio.sleep(60)
-        return {"schema": EXAMPLE_SCHEMA}
+        print(f"Error occurred: {str(e)}")
+        return {"schema": EXAMPLE_SCHEMA, "error": str(e)}
 
 @app.get("/")
 async def read_root():
