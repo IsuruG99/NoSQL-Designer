@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 
+# Python
 DBPlanner/backend/returnToken.py
+DBPlanner/backend/__pycache__/
