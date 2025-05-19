@@ -2,16 +2,18 @@ import React from 'react';
 import JsonCard from './components/basicCard.jsx';
 
 function Panel({ schema, loading, elapsedTime }) {
+    const collections = schema?.collections || null;
+
     return (
         <div className="panel flex flex-col p-4 h-full mt-5">
             <h2 className="text-white text-xl mb-2 text-center">Drawing Panel</h2>
             {loading ? (
                 <p className="text-white">⏳ Waiting for backend... {elapsedTime} sec elapsed</p>
             ) : (
-                schema && typeof schema === 'object' ? (
+                collections && typeof collections === 'object' ? (
                     <div className="panel__output grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 place-items-center mt-5">
-                        {Object.keys(schema).map((key, index) => (
-                            <JsonCard key={index} entity={schema[key]} />
+                        {Object.entries(collections).map(([name, collection], index) => (
+                            <JsonCard key={index} entity={collection} />
                         ))}
                     </div>
                 ) : (
