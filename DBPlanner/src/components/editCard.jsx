@@ -1,157 +1,91 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { SchemaContext } from '../SchemaContext';
 import './customScrollbar.css';
-
-const dataTypes = [
-    "string",
-    "number",
-    "boolean",
-    "timestamp",
-    "array",
-    "object",
-    "null",
-    "binary",
-    "map"
-];
-
-const storageOptions = [
-    "embedded",
-    "normalized"
-];
+import {
+    DATA_TYPES,
+    STORAGE_OPTIONS,
+    COMMON_VALIDATION_KEYS,
+    getTypeHandler,
+    createAttribute,
+    updateAttribute
+} from './attributeHandlers';
 
 function EditableCard({ handleCloseModal, isNewCard = false }) {
-    const { schema, setSchema, tempSelectedEntity, setTempSelectedEntity, originalSelectedEntity, setOriginalSelectedEntity, setSelectedEntity } = useContext(SchemaContext);
+    const {
+        schema,
+        setSchema,
+        tempSelectedEntity,
+        setTempSelectedEntity,
+        originalSelectedEntity,
+        setOriginalSelectedEntity,
+        setSelectedEntity
+    } = useContext(SchemaContext);
+
     const [entityName, setEntityName] = useState(isNewCard ? "" : tempSelectedEntity?.name || "");
     const [entityDescription, setEntityDescription] = useState(isNewCard ? "" : tempSelectedEntity?.description || "");
-    const [attributes, setAttributes] = useState(isNewCard ? {} : tempSelectedEntity?.attributes || {});
-    const [tempAttributes, setTempAttributes] = useState(attributes);
-    const [tempKeys, setTempKeys] = useState(Object.keys(tempAttributes));
+    const [tempKeys, setTempKeys] = useState(Object.keys(tempSelectedEntity?.attributes || {}));
 
     useEffect(() => {
-        if (!isNewCard) {
-            setEntityName(tempSelectedEntity?.name || "");
-            setEntityDescription(tempSelectedEntity?.description || "");
-            setAttributes(tempSelectedEntity?.attributes || {});
-            setTempAttributes(tempSelectedEntity?.attributes || {});
-            setTempKeys(Object.keys(tempSelectedEntity?.attributes || {}));
+        if (!isNewCard && tempSelectedEntity) {
+            setEntityName(tempSelectedEntity.name || "");
+            setEntityDescription(tempSelectedEntity.description || "");
+            setTempKeys(Object.keys(tempSelectedEntity.attributes || {}));
         }
     }, [tempSelectedEntity, isNewCard]);
 
     const handleNameChange = (e) => {
-        setEntityName(e.target.value);
-        setTempSelectedEntity({ ...tempSelectedEntity, name: e.target.value });
+        const newName = e.target.value;
+        setEntityName(newName);
+        setTempSelectedEntity({ ...tempSelectedEntity, name: newName });
     };
 
     const handleDescriptionChange = (e) => {
-        setEntityDescription(e.target.value);
-        setTempSelectedEntity({ ...tempSelectedEntity, description: e.target.value });
+        const newDescription = e.target.value;
+        setEntityDescription(newDescription);
+        setTempSelectedEntity({ ...tempSelectedEntity, description: newDescription });
     };
 
     const updateAttributes = (updatedAttributes) => {
-        setTempAttributes(updatedAttributes);
         setTempSelectedEntity({ ...tempSelectedEntity, attributes: updatedAttributes });
+        setTempKeys(Object.keys(updatedAttributes));
     };
 
-    const handleAttributeChange = (keyPath, value) => {
-        const updatedAttributes = { ...tempAttributes };
-
-        if (typeof value === 'object' && value !== null) {
-            updatedAttributes[keyPath] = value;
-        } else {
-            if (!updatedAttributes[keyPath]) {
-                updatedAttributes[keyPath] = {
-                    type: value || "string",
-                    required: false,
-                    validation: {},
-                    storage: "embedded",
-                    properties: {}
-                };
-            } else {
-                updatedAttributes[keyPath].type = value || "string";
-            }
-        }
-
+    const handleAttributeChange = (keyPath, field, value) => {
+        const updatedAttributes = updateAttribute(
+            tempSelectedEntity?.attributes || {},
+            keyPath,
+            field,
+            value
+        );
         updateAttributes(updatedAttributes);
     };
 
-    const handleSubAttributeChange = (keyPath, subKey, value) => {
-        const updatedAttributes = { ...tempAttributes };
-
-        if (!updatedAttributes[keyPath].properties) {
-            updatedAttributes[keyPath].properties = {};
-        }
-
-        if (typeof value === 'object' && value !== null) {
-            updatedAttributes[keyPath].properties[subKey] = value;
-        } else {
-            if (!updatedAttributes[keyPath].properties[subKey]) {
-                updatedAttributes[keyPath].properties[subKey] = {
-                    type: value || "string",
-                    required: false,
-                    validation: {},
-                    properties: {}
-                };
-            } else {
-                updatedAttributes[keyPath].properties[subKey].type = value || "string";
-            }
-        }
-
-        updateAttributes(updatedAttributes);
-    };
-
-    const handleRequiredChange = (keyPath, required) => {
-        const updatedAttributes = { ...tempAttributes };
-        updatedAttributes[keyPath].required = required;
-        updateAttributes(updatedAttributes);
-    };
-
-    const handleStorageChange = (keyPath, storage) => {
-        const updatedAttributes = { ...tempAttributes };
-        updatedAttributes[keyPath].storage = storage;
-        updateAttributes(updatedAttributes);
-    };
-
-    const handleValidationChange = (keyPath, validationKey, validationValue) => {
-        const updatedAttributes = { ...tempAttributes };
-        if (!updatedAttributes[keyPath].validation) {
-            updatedAttributes[keyPath].validation = {};
-        }
-        updatedAttributes[keyPath].validation[validationKey] = validationValue;
+    const handleAddAttribute = () => {
+        const newKey = `newAttribute${tempKeys.length + 1}`;
+        const updatedAttributes = {
+            ...(tempSelectedEntity?.attributes || {}),
+            [newKey]: createAttribute("string")
+        };
         updateAttributes(updatedAttributes);
     };
 
     const handleSave = () => {
         try {
-            if (!schema || !tempSelectedEntity) {
-                throw new Error("Session variables are missing.");
-            }
-
-            if (typeof schema !== 'object') {
-                throw new Error("Schema is not an object.");
-            }
-
-            if (!entityName.trim()) {
-                throw new Error("Collection name cannot be blank.");
-            }
-
-            if (Object.keys(tempAttributes).length === 0) {
+            if (!entityName.trim()) throw new Error("Collection name cannot be blank.");
+            if (!tempSelectedEntity?.attributes || Object.keys(tempSelectedEntity.attributes).length === 0) {
                 throw new Error("Collection must have at least one attribute.");
             }
 
-            const updatedSchema = { ...schema };
+            const updatedSchema = { ...schema, collections: { ...schema.collections } };
 
-            if (!updatedSchema.collections) {
-                updatedSchema.collections = {};
-            }
-
-            if (!isNewCard && originalSelectedEntity && updatedSchema.collections[originalSelectedEntity.name]) {
+            if (!isNewCard && originalSelectedEntity?.name) {
                 delete updatedSchema.collections[originalSelectedEntity.name];
             }
 
             updatedSchema.collections[entityName] = {
                 name: entityName,
                 description: entityDescription,
-                attributes: tempAttributes
+                attributes: tempSelectedEntity.attributes
             };
 
             setSchema(updatedSchema);
@@ -166,7 +100,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 
     return (
         <div className="w-full h-full flex flex-col bg-gray-800 rounded-lg shadow-lg">
-            {/* Fixed Header Section */}
+            {/* Header Section */}
             <div className="p-4">
                 <div className="mb-2">
                     <label className="block text-gray-400 text-sm mb-1">Collection Name</label>
@@ -191,7 +125,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 
             <hr className="border-gray-600" />
 
-            {/* Scrollable Content Section */}
+            {/* Attributes Section */}
             <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[50vh] p-4">
                 <h3 className="text-lg font-bold text-cyan-400 mb-2">Attributes</h3>
 
@@ -200,30 +134,15 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         <AttributeEditor
                             key={key}
                             attributeKey={key}
-                            attributeValue={tempAttributes[key]}
+                            attributeValue={tempSelectedEntity?.attributes[key]}
                             onAttributeChange={handleAttributeChange}
-                            onSubAttributeChange={handleSubAttributeChange}
-                            onRequiredChange={handleRequiredChange}
-                            onStorageChange={handleStorageChange}
-                            onValidationChange={handleValidationChange}
                             isNested={false}
                         />
                     ))}
                 </ul>
 
                 <button
-                    onClick={() => {
-                        const newKey = `newAttribute${tempKeys.length + 1}`;
-                        const updatedAttributes = { ...tempAttributes };
-                        updatedAttributes[newKey] = {
-                            type: "string",
-                            required: false,
-                            validation: {},
-                            storage: "embedded",
-                            properties: {}
-                        };
-                        updateAttributes(updatedAttributes);
-                    }}
+                    onClick={handleAddAttribute}
                     className="text-white hover:text-cyan-400 text-xl mt-4 flex items-center w-full justify-center py-2 border border-dashed border-gray-600 rounded-lg"
                 >
                     + Add Attribute
@@ -232,7 +151,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 
             <hr className="border-gray-600" />
 
-            {/* Fixed Footer Section */}
+            {/* Footer Actions */}
             <div className="p-4 flex justify-end space-x-2">
                 <button
                     onClick={handleSave}
@@ -255,116 +174,49 @@ function AttributeEditor({
     attributeKey,
     attributeValue,
     onAttributeChange,
-    onSubAttributeChange,
-    onRequiredChange,
-    onStorageChange,
-    onValidationChange,
     isNested
 }) {
     const [keyName, setKeyName] = useState(attributeKey);
-    const [localAttributeValue, setLocalAttributeValue] = useState(attributeValue);
     const [validationKey, setValidationKey] = useState("");
+    const [customKey, setCustomKey] = useState("");
+    const [useCustomKey, setUseCustomKey] = useState(false);
     const [validationValue, setValidationValue] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
-    
-
-    const handleTypeChange = (e) => {
-        const newType = e.target.value;
-        let newValue = { ...localAttributeValue, type: newType };
-
-        if ((localAttributeValue.type === 'object' || localAttributeValue.type === 'array') &&
-            newType !== 'object' && newType !== 'array') {
-            newValue = { ...newValue, properties: {} };
-        }
-
-        if ((newType === 'object' || newType === 'array') && !newValue.properties) {
-            newValue = { ...newValue, properties: {} };
-        }
-
-        setLocalAttributeValue(newValue);
-        onAttributeChange(attributeKey, newValue);
-    };
-
-    const handleRequiredChange = (e) => {
-        const newValue = { ...localAttributeValue, required: e.target.checked };
-        setLocalAttributeValue(newValue);
-        onRequiredChange(attributeKey, e.target.checked);
-    };
-
-    const handleStorageChange = (e) => {
-        const newValue = { ...localAttributeValue, storage: e.target.value };
-        setLocalAttributeValue(newValue);
-        onStorageChange(attributeKey, e.target.value);
-    };
 
     const handleValidationAdd = () => {
         if (validationKey && validationValue) {
-            const newValidation = { ...localAttributeValue.validation, [validationKey]: validationValue };
-            const newValue = { ...localAttributeValue, validation: newValidation };
-            setLocalAttributeValue(newValue);
-            onValidationChange(attributeKey, validationKey, validationValue);
+            onAttributeChange(attributeKey, 'validation', { key: validationKey, value: validationValue });
             setValidationKey("");
             setValidationValue("");
         }
     };
 
-    const handleValidationRemove = (key) => {
-        const newValidation = { ...localAttributeValue.validation };
-        delete newValidation[key];
-        const newValue = { ...localAttributeValue, validation: newValidation };
-        setLocalAttributeValue(newValue);
-        onValidationChange(attributeKey, key, undefined);
-    };
-
     const handleAddSubAttribute = () => {
-        if (localAttributeValue.type === "object" || localAttributeValue.type === "array") {
-            const newKey = `newSubAttribute${Object.keys(localAttributeValue.properties || {}).length + 1}`;
-            const newProperties = {
-                ...localAttributeValue.properties,
-                [newKey]: {
-                    type: "string",
-                    required: false,
-                    validation: {},
-                    properties: {}
-                }
-            };
-            const newValue = { ...localAttributeValue, properties: newProperties };
-            setLocalAttributeValue(newValue);
-            onAttributeChange(attributeKey, newValue);
+        if (['object', 'array'].includes(attributeValue.type)) {
+            const newKey = `newSubAttribute${Object.keys(attributeValue.properties || {}).length + 1}`;
+            onAttributeChange(`${attributeKey}.properties.${newKey}`, 'type', 'string');
         }
     };
 
-    const getAvailableTypes = () => {
-        if (isNested) {
-            return dataTypes.filter(type => type !== 'object' && type !== 'array');
-        }
-        return dataTypes;
-    };
+    const getAvailableTypes = () =>
+        isNested ? DATA_TYPES.filter(type => !['object', 'array'].includes(type)) : DATA_TYPES;
 
     return (
         <li className="bg-gray-700 rounded-lg p-3">
-            {/* Compact view - always visible and clickable */}
-            <div
-                className="flex justify-between items-center cursor-pointer"
-                onClick={() => setIsExpanded(!isExpanded)}
-            >
+            <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
                 <div className="font-medium text-white">{keyName || "Unnamed attribute"}</div>
                 <div className="flex items-center">
                     <div className="text-sm text-gray-400 mr-2">
-                        {localAttributeValue.type}
-                        {localAttributeValue.required && (
-                            <span className="ml-2 text-red-400">• Required</span>
-                        )}
+                        {attributeValue.type}
+                        {attributeValue.required && <span className="ml-2 text-red-400">• Required</span>}
                     </div>
-                    <span className="text-gray-400 text-lg font-mono">
+                    {/* <span className="text-gray-400 text-lg font-mono">
                         {isExpanded ? 'Collapse' : 'Expand'}
-                    </span>
+                    </span> */}
                 </div>
             </div>
 
-            {/* Expandable details */}
-            <div className={`overflow-hidden transition-all duration-200 ease-in-out ${isExpanded ? 'max-h-[1000px] mt-3 pt-3 border-t border-gray-600' : 'max-h-0'
-                }`}>
+            <div className={`overflow-hidden transition-all duration-200 ${isExpanded ? 'max-h-[1000px] mt-3 pt-3 border-t border-gray-600' : 'max-h-0'}`}>
                 <div className="grid grid-cols-2 gap-2 mb-2">
                     <div>
                         <label className="block text-gray-400 text-sm mb-1">Attribute Name</label>
@@ -379,10 +231,10 @@ function AttributeEditor({
                     <div>
                         <label className="block text-gray-400 text-sm mb-1">Type</label>
                         <select
-                            value={localAttributeValue.type}
-                            onChange={handleTypeChange}
+                            value={attributeValue.type}
+                            onChange={e => onAttributeChange(attributeKey, 'type', e.target.value)}
                             className="bg-gray-800 text-white p-1 rounded w-full"
-                            disabled={isNested && (localAttributeValue.type === 'object' || localAttributeValue.type === 'array')}
+                            disabled={isNested && ['object', 'array'].includes(attributeValue.type)}
                         >
                             {getAvailableTypes().map((type) => (
                                 <option key={type} value={type}>{type}</option>
@@ -396,22 +248,22 @@ function AttributeEditor({
                         <input
                             type="checkbox"
                             id={`required-${attributeKey}`}
-                            checked={localAttributeValue.required || false}
-                            onChange={handleRequiredChange}
+                            checked={attributeValue.required || false}
+                            onChange={e => onAttributeChange(attributeKey, 'required', e.target.checked)}
                             className="mr-2"
                         />
                         <label htmlFor={`required-${attributeKey}`} className="text-gray-400 text-sm">Required</label>
                     </div>
 
-                    {(localAttributeValue.type === "array" || localAttributeValue.type === "object") && !isNested && (
+                    {['array', 'object'].includes(attributeValue.type) && !isNested && (
                         <div>
                             <label className="block text-gray-400 text-sm mb-1">Storage</label>
                             <select
-                                value={localAttributeValue.storage || "embedded"}
-                                onChange={handleStorageChange}
+                                value={attributeValue.storage || "embedded"}
+                                onChange={e => onAttributeChange(attributeKey, 'storage', e.target.value)}
                                 className="bg-gray-800 text-white p-1 rounded w-full"
                             >
-                                {storageOptions.map((option) => (
+                                {STORAGE_OPTIONS.map((option) => (
                                     <option key={option} value={option}>{option}</option>
                                 ))}
                             </select>
@@ -422,13 +274,34 @@ function AttributeEditor({
                 <div className="mb-3">
                     <label className="block text-gray-400 text-sm mb-1">Validation Rules</label>
                     <div className="flex space-x-2 mb-2">
-                        <input
-                            type="text"
-                            placeholder="Key (e.g., pattern)"
-                            value={validationKey}
-                            onChange={(e) => setValidationKey(e.target.value)}
+                        <select
+                            value={useCustomKey ? "custom" : validationKey}
+                            onChange={e => {
+                                if (e.target.value === "custom") {
+                                    setUseCustomKey(true);
+                                    setValidationKey("");
+                                } else {
+                                    setUseCustomKey(false);
+                                    setValidationKey(e.target.value);
+                                }
+                            }}
                             className="bg-gray-800 text-white p-1 rounded flex-1"
-                        />
+                        >
+                            <option value="" disabled>Select rule</option>
+                            {COMMON_VALIDATION_KEYS.map(key => (
+                                <option key={key} value={key}>{key}</option>
+                            ))}
+                            <option value="custom">Other...</option>
+                        </select>
+                        {useCustomKey && (
+                            <input
+                                type="text"
+                                placeholder="Custom key"
+                                value={customKey}
+                                onChange={e => setCustomKey(e.target.value)}
+                                className="bg-gray-800 text-white p-1 rounded flex-1"
+                            />
+                        )}
                         <input
                             type="text"
                             placeholder="Value (e.g., ^[A-Z]+$)"
@@ -443,14 +316,14 @@ function AttributeEditor({
                             Add
                         </button>
                     </div>
-                    {localAttributeValue.validation && Object.keys(localAttributeValue.validation).length > 0 && (
+                    {attributeValue.validation && Object.keys(attributeValue.validation).length > 0 && (
                         <div className="bg-gray-800 rounded p-2 max-h-32 overflow-y-auto">
-                            {Object.entries(localAttributeValue.validation).map(([key, value]) => (
+                            {Object.entries(attributeValue.validation).map(([key, value]) => (
                                 <div key={key} className="flex justify-between items-center mb-1 last:mb-0">
                                     <span className="text-cyan-300">{key}:</span>
                                     <span className="text-gray-300">{value}</span>
                                     <button
-                                        onClick={() => handleValidationRemove(key)}
+                                        onClick={() => onAttributeChange(attributeKey, 'deleteValidation', key)}
                                         className="text-red-400 hover:text-red-300"
                                     >
                                         ×
@@ -461,7 +334,7 @@ function AttributeEditor({
                     )}
                 </div>
 
-                {(localAttributeValue.type === "object" || localAttributeValue.type === "array") && !isNested && (
+                {['object', 'array'].includes(attributeValue.type) && !isNested && (
                     <div className="mt-3">
                         <div className="flex justify-between items-center mb-2">
                             <h4 className="text-gray-400">Sub-attributes</h4>
@@ -473,19 +346,16 @@ function AttributeEditor({
                             </button>
                         </div>
 
-                        {localAttributeValue.properties && Object.keys(localAttributeValue.properties).length > 0 ? (
+                        {attributeValue.properties && Object.keys(attributeValue.properties).length > 0 ? (
                             <div className="bg-gray-800 rounded p-2 space-y-2 max-h-64 overflow-y-auto">
-                                {Object.entries(localAttributeValue.properties).map(([subKey, subValue]) => (
+                                {Object.entries(attributeValue.properties).map(([subKey, subValue]) => (
                                     <AttributeEditor
                                         key={subKey}
                                         attributeKey={subKey}
                                         attributeValue={subValue}
-                                        onAttributeChange={(key, value) => onSubAttributeChange(attributeKey, key, value)}
-                                        onRequiredChange={(key, required) => onSubAttributeChange(attributeKey, key, { ...subValue, required })}
-                                        onValidationChange={(key, valKey, valValue) => {
-                                            const newValidation = { ...subValue.validation, [valKey]: valValue };
-                                            onSubAttributeChange(attributeKey, key, { ...subValue, validation: newValidation });
-                                        }}
+                                        onAttributeChange={(key, field, value) =>
+                                            onAttributeChange(`${attributeKey}.properties.${key}`, field, value)
+                                        }
                                         isNested={true}
                                     />
                                 ))}
@@ -495,6 +365,15 @@ function AttributeEditor({
                         )}
                     </div>
                 )}
+
+                <div className="mt-3 flex justify-end">
+                    <button
+                        onClick={() => onAttributeChange(attributeKey, 'delete', true)}
+                        className="text-red-400 hover:text-red-300 text-sm"
+                    >
+                        Delete Attribute
+                    </button>
+                </div>
             </div>
         </li>
     );
