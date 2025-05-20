@@ -9,10 +9,10 @@ function AdvPanel({ schema, loading, elapsedTime, onEdit, onAdd }) {
         <p className="text-white">⏳ Waiting for backend... {elapsedTime} sec elapsed</p>
       ) : (
         <>
-          {schema && typeof schema === 'object' ? (
+          {schema?.collections && typeof schema.collections === 'object' ? (
             <div className="panel__output grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 place-items-center items-fit w-full">
-              {Object.keys(schema).map((key, index) => (
-                <AdvCard key={index} entity={schema[key]} onEdit={onEdit} />
+              {Object.keys(schema.collections).map((key, index) => (
+                <AdvCard key={index} entity={schema.collections[key]} onEdit={onEdit} />
               ))}
               <div
                 onClick={onAdd}
