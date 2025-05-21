@@ -58,6 +58,10 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             value
         );
         updateAttributes(updatedAttributes);
+
+        if (field === 'rename') {
+            setTempKeys(Object.keys(updatedAttributes));
+        }
     };
 
     const handleAddAttribute = () => {
@@ -143,7 +147,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 
                 <button
                     onClick={handleAddAttribute}
-                    className="text-white hover:text-cyan-400 text-xl mt-4 flex items-center w-full justify-center py-2 border border-dashed border-gray-600 rounded-lg"
+                    className="text-white hover:text-cyan-400 text-xl mt-2 flex items-center w-full justify-center py-2 border border-dashed border-gray-600 rounded-lg"
                 >
                     + Add Attribute
                 </button>
@@ -183,11 +187,21 @@ function AttributeEditor({
     const [validationValue, setValidationValue] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
 
+    useEffect(() => {
+        setKeyName(attributeKey);
+    }, [attributeKey]);
+
     const handleValidationAdd = () => {
         if (validationKey && validationValue) {
             onAttributeChange(attributeKey, 'validation', { key: validationKey, value: validationValue });
             setValidationKey("");
             setValidationValue("");
+        }
+    };
+
+    const handleKeyRename = () => {
+        if (keyName !== attributeKey && keyName.trim() !== "") {
+            onAttributeChange(attributeKey, 'rename', keyName.trim());
         }
     };
 
@@ -199,183 +213,228 @@ function AttributeEditor({
     };
 
     const getAvailableTypes = () =>
-        isNested ? DATA_TYPES.filter(type => !['object', 'array'].includes(type)) : DATA_TYPES;
+        isNested ? DATA_TYPES.filter(type => !['object', 'array', 'null'].includes(type)) : DATA_TYPES;
+
+    const Wrapper = isNested ? 'div' : 'li';
 
     return (
-        <li className="bg-gray-700 rounded-lg p-3">
-            <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-                <div className="font-medium text-white">{keyName || "Unnamed attribute"}</div>
-                <div className="flex items-center">
-                    <div className="text-sm text-gray-400 mr-2">
-                        {attributeValue.type}
-                        {attributeValue.required && <span className="ml-2 text-red-400">• Required</span>}
-                    </div>
-                    {/* <span className="text-gray-400 text-lg font-mono">
+        <Wrapper className="bg-gray-800">
+            <li className="bg-gray-700 rounded-lg p-3">
+                <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
+                    <div className="font-medium text-white">{keyName || "Unnamed attribute"}</div>
+                    <div className="flex items-center">
+                        <div className="text-sm text-gray-400 mr-2">
+                            {attributeValue.type}
+                            {attributeValue.isKey && <span className="ml-2 text-yellow-400">• Key</span>}
+                            {attributeValue.required && <span className="ml-2 text-red-400">• Required</span>}
+                        </div>
+                        {/* <span className="text-gray-400 text-lg font-mono">
                         {isExpanded ? 'Collapse' : 'Expand'}
                     </span> */}
-                </div>
-            </div>
-
-            <div className={`overflow-hidden transition-all duration-200 ${isExpanded ? 'max-h-[1000px] mt-3 pt-3 border-t border-gray-600' : 'max-h-0'}`}>
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                    <div>
-                        <label className="block text-gray-400 text-sm mb-1">Attribute Name</label>
-                        <input
-                            type="text"
-                            value={keyName}
-                            onChange={(e) => setKeyName(e.target.value)}
-                            className="bg-gray-800 text-white p-1 rounded w-full"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-gray-400 text-sm mb-1">Type</label>
-                        <select
-                            value={attributeValue.type}
-                            onChange={e => onAttributeChange(attributeKey, 'type', e.target.value)}
-                            className="bg-gray-800 text-white p-1 rounded w-full"
-                            disabled={isNested && ['object', 'array'].includes(attributeValue.type)}
-                        >
-                            {getAvailableTypes().map((type) => (
-                                <option key={type} value={type}>{type}</option>
-                            ))}
-                        </select>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                    <div className="flex items-center">
-                        <input
-                            type="checkbox"
-                            id={`required-${attributeKey}`}
-                            checked={attributeValue.required || false}
-                            onChange={e => onAttributeChange(attributeKey, 'required', e.target.checked)}
-                            className="mr-2"
-                        />
-                        <label htmlFor={`required-${attributeKey}`} className="text-gray-400 text-sm">Required</label>
-                    </div>
-
-                    {['array', 'object'].includes(attributeValue.type) && !isNested && (
+                {/* Expanded content */}
+                <div className={`overflow-hidden transition-all duration-200 ${isExpanded ? 'max-h-[1000px] mt-3 pt-3 border-t border-gray-600' : 'max-h-0'}`}>
+                    <div className="grid grid-cols-2 gap-2 mb-2">
                         <div>
-                            <label className="block text-gray-400 text-sm mb-1">Storage</label>
-                            <select
-                                value={attributeValue.storage || "embedded"}
-                                onChange={e => onAttributeChange(attributeKey, 'storage', e.target.value)}
+                            <label className="block text-gray-400 text-sm mb-1">Attribute Name</label>
+                            <input
+                                type="text"
+                                value={keyName}
+                                onChange={e => setKeyName(e.target.value)}
+                                onBlur={handleKeyRename}
                                 className="bg-gray-800 text-white p-1 rounded w-full"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-gray-400 text-sm mb-1">Type</label>
+                            <select
+                                value={attributeValue.type}
+                                onChange={e => onAttributeChange(attributeKey, 'type', e.target.value)}
+                                className="bg-gray-800 text-white p-1 rounded w-full"
+                                disabled={isNested && ['object', 'array'].includes(attributeValue.type)}
                             >
-                                {STORAGE_OPTIONS.map((option) => (
-                                    <option key={option} value={option}>{option}</option>
+                                {getAvailableTypes().map((type) => (
+                                    <option key={type} value={type}>{type}</option>
                                 ))}
                             </select>
                         </div>
-                    )}
-                </div>
+                    </div>
 
-                <div className="mb-3">
-                    <label className="block text-gray-400 text-sm mb-1">Validation Rules</label>
-                    <div className="flex space-x-2 mb-2">
-                        <select
-                            value={useCustomKey ? "custom" : validationKey}
-                            onChange={e => {
-                                if (e.target.value === "custom") {
-                                    setUseCustomKey(true);
-                                    setValidationKey("");
-                                } else {
-                                    setUseCustomKey(false);
-                                    setValidationKey(e.target.value);
-                                }
-                            }}
-                            className="bg-gray-800 text-white p-1 rounded flex-1"
-                        >
-                            <option value="" disabled>Select rule</option>
-                            {COMMON_VALIDATION_KEYS.map(key => (
-                                <option key={key} value={key}>{key}</option>
-                            ))}
-                            <option value="custom">Other...</option>
-                        </select>
-                        {useCustomKey && (
+                    {/* Required and Storage */}
+                    <div className="grid grid-cols-8 gap-2 mb-2">
+                        <div className="col-span-2 flex items-center">
                             <input
-                                type="text"
-                                placeholder="Custom key"
-                                value={customKey}
-                                onChange={e => setCustomKey(e.target.value)}
-                                className="bg-gray-800 text-white p-1 rounded flex-1"
+                                type="checkbox"
+                                id={`required-${attributeKey}`}
+                                checked={attributeValue.required || false}
+                                onChange={e => onAttributeChange(attributeKey, 'required', e.target.checked)}
+                                className="mr-2"
                             />
+                            <label htmlFor={`required-${attributeKey}`} className="text-gray-400 text-sm">Required</label>
+                        </div>
+                        <div className="col-span-2 flex items-center">
+                            <input
+                                type="checkbox"
+                                id={`isKey-${attributeKey}`}
+                                checked={attributeValue.isKey || false}
+                                onChange={e => onAttributeChange(attributeKey, 'isKey', e.target.checked)}
+                                className="mr-2"
+                            />
+                            <label htmlFor={`isKey-${attributeKey}`} className="text-gray-400 text-sm">isKey</label>
+                        </div>
+                        {['array', 'object'].includes(attributeValue.type) && !isNested && (
+                            <div className="col-span-4">
+                                <label className="block text-gray-400 text-sm mb-1">Storage</label>
+                                <select
+                                    value={attributeValue.storage || "embedded"}
+                                    onChange={e => onAttributeChange(attributeKey, 'storage', e.target.value)}
+                                    className="bg-gray-800 text-white p-1 rounded w-full"
+                                >
+                                    {STORAGE_OPTIONS.map((option) => (
+                                        <option key={option} value={option}>{option}</option>
+                                    ))}
+                                </select>
+                            </div>
                         )}
-                        <input
-                            type="text"
-                            placeholder="Value (e.g., ^[A-Z]+$)"
-                            value={validationValue}
-                            onChange={(e) => setValidationValue(e.target.value)}
-                            className="bg-gray-800 text-white p-1 rounded flex-1"
-                        />
+                    </div>
+
+                    {/* Validation */}
+                    {attributeValue.type !== "null" && (
+                        <div className="mb-3">
+                            <label className="block text-gray-400 text-sm mb-1">Validation Rules</label>
+                            <div className="flex mx-1 space-x-2 mb-2">
+                                <select
+                                    value={useCustomKey ? "custom" : validationKey}
+                                    onChange={e => {
+                                        if (e.target.value === "custom") {
+                                            setUseCustomKey(true);
+                                            setValidationKey("");
+                                        } else {
+                                            setUseCustomKey(false);
+                                            setValidationKey(e.target.value);
+                                        }
+                                    }}
+                                    className="bg-gray-800 text-white p-1 rounded flex-1"
+                                >
+                                    <option value="" disabled>Select rule</option>
+                                    {COMMON_VALIDATION_KEYS.map(key => (
+                                        <option key={key} value={key}>{key}</option>
+                                    ))}
+                                    <option value="custom">Other...</option>
+                                </select>
+                                {useCustomKey && (
+                                    <input
+                                        type="text"
+                                        placeholder="Custom key"
+                                        value={customKey}
+                                        onChange={e => setCustomKey(e.target.value)}
+                                        className="bg-gray-800 text-white p-1 rounded flex-1"
+                                    />
+                                )}
+                                <input
+                                    type="text"
+                                    placeholder="Value (e.g., ^[A-Z]+$)"
+                                    value={validationValue}
+                                    onChange={(e) => setValidationValue(e.target.value)}
+                                    className="bg-gray-800 text-white p-1 rounded flex-1"
+                                />
+                                <button
+                                    onClick={handleValidationAdd}
+                                    className="bg-blue-600 text-white px-2 rounded hover:bg-blue-700"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                            {attributeValue.validation && Object.keys(attributeValue.validation).length > 0 && (
+                                <div className="mx-1 bg-gray-800 rounded p-1 max-h-32 overflow-y-auto">
+                                    {Object.entries(attributeValue.validation).map(([key, value]) => (
+                                        <div key={key} className="mx-1 flex justify-between items-center mb-1 last:mb-0">
+                                            <span className="text-cyan-300">{key}:</span>
+                                            <span className="text-gray-300">{value}</span>
+                                            <button
+                                                onClick={() => onAttributeChange(attributeKey, 'deleteValidation', key)}
+                                                className="text-red-400 hover:text-red-300"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Object and Array Sub-attributes */}
+                    {attributeValue.type === 'object' && !isNested && (
+                        <div className="mt-3 bg-gray-800 rounded p-2">
+                            <div className="flex justify-between items-center mb-2">
+                                <h4 className="text-gray-400">Sub-attributes</h4>
+                                <button
+                                    onClick={handleAddSubAttribute}
+                                    className="text-white hover:text-cyan-400 text-sm"
+                                >
+                                    + Add Sub-attribute
+                                </button>
+                            </div>
+
+                            {attributeValue.properties && Object.keys(attributeValue.properties).length > 0 ? (
+                                <div className="space-y-2 max-h-64 overflow-y-auto">
+                                    {Object.entries(attributeValue.properties).map(([subKey, subValue]) => (
+                                        <AttributeEditor
+                                            key={subKey}
+                                            attributeKey={subKey}
+                                            attributeValue={subValue}
+                                            onAttributeChange={(key, field, value) =>
+                                                onAttributeChange(`${attributeKey}.properties.${key}`, field, value)
+                                            }
+                                            isNested={true}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-gray-500 text-sm">No sub-attributes defined</p>
+                            )}
+                        </div>
+                    )}
+
+                    {attributeValue.type === 'array' && !isNested && (
+                        <div className="mt-3 bg-gray-800 rounded p-2">
+                            <h4 className="text-gray-400 mb-2">Array Item Type</h4>
+                            {/* Array items editor: allow editing the schema for array elements */}
+                            {attributeValue.items ? (
+                                <AttributeEditor
+                                    attributeKey="items"
+                                    attributeValue={attributeValue.items}
+                                    onAttributeChange={(key, field, value) =>
+                                        onAttributeChange(`${attributeKey}.items${key !== "items" ? `.${key}` : ""}`, field, value)
+                                    }
+                                    isNested={true}
+                                />
+                            ) : (
+                                <button
+                                    onClick={() => onAttributeChange(`${attributeKey}.items`, 'type', 'string')}
+                                    className="text-white hover:text-cyan-400 text-sm"
+                                >
+                                    + Define Array Item Type
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    <div className="mt-3 flex justify-end">
                         <button
-                            onClick={handleValidationAdd}
-                            className="bg-blue-600 text-white px-2 rounded hover:bg-blue-700"
+                            onClick={() => onAttributeChange(attributeKey, 'delete', true)}
+                            className="text-red-400 hover:text-red-300 text-sm"
                         >
-                            Add
+                            {`Delete ${keyName || attributeKey}`}
                         </button>
                     </div>
-                    {attributeValue.validation && Object.keys(attributeValue.validation).length > 0 && (
-                        <div className="bg-gray-800 rounded p-2 max-h-32 overflow-y-auto">
-                            {Object.entries(attributeValue.validation).map(([key, value]) => (
-                                <div key={key} className="flex justify-between items-center mb-1 last:mb-0">
-                                    <span className="text-cyan-300">{key}:</span>
-                                    <span className="text-gray-300">{value}</span>
-                                    <button
-                                        onClick={() => onAttributeChange(attributeKey, 'deleteValidation', key)}
-                                        className="text-red-400 hover:text-red-300"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    )}
                 </div>
-
-                {['object', 'array'].includes(attributeValue.type) && !isNested && (
-                    <div className="mt-3">
-                        <div className="flex justify-between items-center mb-2">
-                            <h4 className="text-gray-400">Sub-attributes</h4>
-                            <button
-                                onClick={handleAddSubAttribute}
-                                className="text-white hover:text-cyan-400 text-sm"
-                            >
-                                + Add Sub-attribute
-                            </button>
-                        </div>
-
-                        {attributeValue.properties && Object.keys(attributeValue.properties).length > 0 ? (
-                            <div className="bg-gray-800 rounded p-2 space-y-2 max-h-64 overflow-y-auto">
-                                {Object.entries(attributeValue.properties).map(([subKey, subValue]) => (
-                                    <AttributeEditor
-                                        key={subKey}
-                                        attributeKey={subKey}
-                                        attributeValue={subValue}
-                                        onAttributeChange={(key, field, value) =>
-                                            onAttributeChange(`${attributeKey}.properties.${key}`, field, value)
-                                        }
-                                        isNested={true}
-                                    />
-                                ))}
-                            </div>
-                        ) : (
-                            <p className="text-gray-500 text-sm">No sub-attributes defined</p>
-                        )}
-                    </div>
-                )}
-
-                <div className="mt-3 flex justify-end">
-                    <button
-                        onClick={() => onAttributeChange(attributeKey, 'delete', true)}
-                        className="text-red-400 hover:text-red-300 text-sm"
-                    >
-                        Delete Attribute
-                    </button>
-                </div>
-            </div>
-        </li>
+            </li>
+        </Wrapper>
     );
 }
 
