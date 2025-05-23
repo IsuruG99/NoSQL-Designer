@@ -186,6 +186,7 @@ function AttributeEditor({
     const [useCustomKey, setUseCustomKey] = useState(false);
     const [validationValue, setValidationValue] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
+    const [isValidationExpanded, setIsValidationExpanded] = useState(false);
 
     useEffect(() => {
         setKeyName(attributeKey);
@@ -303,66 +304,78 @@ function AttributeEditor({
 
                     {/* Validation */}
                     {attributeValue.type !== "null" && (
-                        <div className="mb-3">
-                            <label className="block text-gray-400 text-sm mb-1">Validation Rules</label>
-                            <div className="flex mx-1 space-x-2 mb-2">
-                                <select
-                                    value={useCustomKey ? "custom" : validationKey}
-                                    onChange={e => {
-                                        if (e.target.value === "custom") {
-                                            setUseCustomKey(true);
-                                            setValidationKey("");
-                                        } else {
-                                            setUseCustomKey(false);
-                                            setValidationKey(e.target.value);
-                                        }
-                                    }}
-                                    className="bg-gray-800 text-white p-1 rounded flex-1"
-                                >
-                                    <option value="" disabled>Select rule</option>
-                                    {COMMON_VALIDATION_KEYS.map(key => (
-                                        <option key={key} value={key}>{key}</option>
-                                    ))}
-                                    <option value="custom">Other...</option>
-                                </select>
-                                {useCustomKey && (
-                                    <input
-                                        type="text"
-                                        placeholder="Custom key"
-                                        value={customKey}
-                                        onChange={e => setCustomKey(e.target.value)}
-                                        className="bg-gray-800 text-white p-1 rounded flex-1"
-                                    />
-                                )}
-                                <input
-                                    type="text"
-                                    placeholder="Value (e.g., ^[A-Z]+$)"
-                                    value={validationValue}
-                                    onChange={(e) => setValidationValue(e.target.value)}
-                                    className="bg-gray-800 text-white p-1 rounded flex-1"
-                                />
-                                <button
-                                    onClick={handleValidationAdd}
-                                    className="bg-blue-600 text-white px-2 rounded hover:bg-blue-700"
-                                >
-                                    Add
-                                </button>
+                        <div className="mb-3 bg-gray-800 rounded p-2 border border-gray-600">
+                            <div
+                                className="flex items-center justify-between cursor-pointer select-none"
+                                onClick={() => setIsValidationExpanded(v => !v)}
+                            >
+                                <span className="text-gray-300 text-base font-medium">Validation Rules</span>
+                                <span className={`ml-2 text-xs ${isValidationExpanded ? "text-cyan-400" : "text-cyan-300"}`}>
+                                    {isValidationExpanded ? "▲ Hide" : "▼ Show"}
+                                </span>
                             </div>
-                            {attributeValue.validation && Object.keys(attributeValue.validation).length > 0 && (
-                                <div className="mx-1 bg-gray-800 rounded p-1 max-h-32 overflow-y-auto">
-                                    {Object.entries(attributeValue.validation).map(([key, value]) => (
-                                        <div key={key} className="mx-1 flex justify-between items-center mb-1 last:mb-0">
-                                            <span className="text-cyan-300">{key}:</span>
-                                            <span className="text-gray-300">{value}</span>
-                                            <button
-                                                onClick={() => onAttributeChange(attributeKey, 'deleteValidation', key)}
-                                                className="text-red-400 hover:text-red-300"
-                                            >
-                                                ×
-                                            </button>
+                            {isValidationExpanded && (
+                                <>
+                                    <div className="flex mx-1 space-x-2 mb-2">
+                                        <select
+                                            value={useCustomKey ? "custom" : validationKey}
+                                            onChange={e => {
+                                                if (e.target.value === "custom") {
+                                                    setUseCustomKey(true);
+                                                    setValidationKey("");
+                                                } else {
+                                                    setUseCustomKey(false);
+                                                    setValidationKey(e.target.value);
+                                                }
+                                            }}
+                                            className="bg-gray-800 text-white p-1 rounded flex-1"
+                                        >
+                                            <option value="" disabled>Select rule</option>
+                                            {COMMON_VALIDATION_KEYS.map(key => (
+                                                <option key={key} value={key}>{key}</option>
+                                            ))}
+                                            <option value="custom">Other...</option>
+                                        </select>
+                                        {useCustomKey && (
+                                            <input
+                                                type="text"
+                                                placeholder="Custom key"
+                                                value={customKey}
+                                                onChange={e => setCustomKey(e.target.value)}
+                                                className="bg-gray-800 text-white p-1 rounded flex-1"
+                                            />
+                                        )}
+                                        <input
+                                            type="text"
+                                            placeholder="Value (e.g., ^[A-Z]+$)"
+                                            value={validationValue}
+                                            onChange={(e) => setValidationValue(e.target.value)}
+                                            className="bg-gray-800 text-white p-1 rounded flex-1"
+                                        />
+                                        <button
+                                            onClick={handleValidationAdd}
+                                            className="bg-blue-600 text-white px-2 rounded hover:bg-blue-700"
+                                        >
+                                            Add
+                                        </button>
+                                    </div>
+                                    {attributeValue.validation && Object.keys(attributeValue.validation).length > 0 && (
+                                        <div className="mx-1 bg-gray-800 rounded p-1 max-h-32 overflow-y-auto">
+                                            {Object.entries(attributeValue.validation).map(([key, value]) => (
+                                                <div key={key} className="mx-1 flex justify-between items-center mb-1 last:mb-0">
+                                                    <span className="text-cyan-300">{key}:</span>
+                                                    <span className="text-gray-300">{value}</span>
+                                                    <button
+                                                        onClick={() => onAttributeChange(attributeKey, 'deleteValidation', key)}
+                                                        className="text-red-400 hover:text-red-300"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     )}
@@ -426,7 +439,11 @@ function AttributeEditor({
 
                     <div className="mt-3 flex justify-end">
                         <button
-                            onClick={() => onAttributeChange(attributeKey, 'delete', true)}
+                            onClick={() => {
+                                if (window.confirm(`Are you sure you want to delete "${keyName || attributeKey}"?`)) {
+                                    onAttributeChange(attributeKey, 'delete', true);
+                                }
+                            }}
                             className="text-red-400 hover:text-red-300 text-sm"
                         >
                             {`Delete ${keyName || attributeKey}`}

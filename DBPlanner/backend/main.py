@@ -78,7 +78,7 @@ class SchemaRequest(BaseModel):
     entities: Optional[str] = None
     constraints: Optional[str] = None
 
-EXAMPLE_SCHEMA = {
+FULL_EXAMPLE_SCHEMA = {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$meta": {
     "version": "1.0",
@@ -187,7 +187,7 @@ async def generate(data: SchemaRequest):
     # For now, just return the example schema
     # except Exception as e:
     #     return {"schema": EXAMPLE_SCHEMA, "error": str(e)}
-    return {"schema": EXAMPLE_SCHEMA}
+    return {"schema": FULL_EXAMPLE_SCHEMA}
 
 @app.get("/")
 async def read_root():
