@@ -78,12 +78,16 @@ class SchemaRequest(BaseModel):
     entities: Optional[str] = None
     constraints: Optional[str] = None
 
-FULL_EXAMPLE_SCHEMA = {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+# Must be appended to top after AI generates PROMPT_SCHEMA
+TOP_SCHEMA_SEGMENT = {
+    "$schema": "http://json-schema.org/draft-07/schema#",
   "$meta": {
     "version": "1.0",
     "description": "Universal NoSQL Schema for Generate + Edit Phases"
-  },
+  }
+}
+
+PROMPT_SCHEMA={
   "collections": {
     "AllTypesTest": {
       "name": "AllTypesTest",
@@ -132,8 +136,12 @@ FULL_EXAMPLE_SCHEMA = {
         }
       }
     }
-  },
-  "exportOptions": {
+  }
+}
+
+# Must be appended to bottom after AI generates PROMPT_SCHEMA
+BOTTOM_SCHEMA_SEGMENT = {
+    "exportOptions": {
     "mongodb": {
       "indexes": [
         { 
@@ -163,31 +171,46 @@ async def generate(data: SchemaRequest):
     if not data.description:
         raise HTTPException(status_code=400, detail="Description is mandatory.")
 
-    # Commented out the LLM call for now: UI changes in progress
-    # prompt = (
-    #     f"Generate NoSQL JSON schema exactly matching this structure:\n"
-    #     f"{json.dumps(EXAMPLE_SCHEMA, indent=2)}\n\n"
-    #     f"Requirements:\n"
-    #     f"- Description: {data.description}\n"
-    #     f"- Entities: {data.entities or 'none'}\n"
-    #     f"- Constraints: {data.constraints or 'none'}\n\n"
-    #     "Rules:\n"
-    #     "1. Maintain exact type definitions and nesting of example schema\n"
-    #     "2. Output pure JSON only"
-    #     "3. Entities are not finalized, so use them as hints\n"
-    #     "4. Constraints are not finalized, so use them as hints\n"
-    # )
+    prompt = (
+        f"Generate NoSQL JSON schema collections section exactly matching this structure:\n"
+        f"{json.dumps(PROMPT_SCHEMA['collections'], indent=2)}\n\n"
+        f"Requirements:\n"
+        f"- Description: {data.description}\n"
+        f"- Entities: {data.entities or 'none'}\n"
+        f"- Constraints: {data.constraints or 'none'}\n\n"
+        "Rules:\n"
+        "1. Maintain exact type definitions and nesting structure as shown in the example\n"
+        "2. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}')\n"
+        "3. Include only valid attributes based on the data types shown in the example\n"
+        "4. Do not include any additional metadata or schema information\n"
+        "5. Ensure all required fields are marked and validation rules are properly set"
+    )
 
-    # try:
-    #     raw_json = await invoke_chute(prompt)
-    #     try:
-    #         return {"schema": json.loads(raw_json[raw_json.find('{'):raw_json.rfind('}')+1])}
-    #     except json.JSONDecodeError as e:
-    #         raise HTTPException(status_code=422, detail=f"Invalid JSON response: {str(e)}")
-    # For now, just return the example schema
-    # except Exception as e:
-    #     return {"schema": EXAMPLE_SCHEMA, "error": str(e)}
-    return {"schema": FULL_EXAMPLE_SCHEMA}
+    try:
+        raw_json = await invoke_chute(prompt)
+        try:
+            # Extract the JSON portion from the response
+            json_start = raw_json.find('{')
+            json_end = raw_json.rfind('}') + 1
+            collections_section = json.loads(raw_json[json_start:json_end])
+            
+            # Build the complete schema by combining all parts
+            complete_schema = {
+                **TOP_SCHEMA_SEGMENT,
+                "collections": collections_section,
+                **BOTTOM_SCHEMA_SEGMENT
+            }
+            
+            # For now, just print the result (as per your request)
+            print("Generated Schema Structure:")
+            print(json.dumps(complete_schema, indent=2))
+            
+            return {"schema": complete_schema}
+            
+        except json.JSONDecodeError as e:
+            raise HTTPException(status_code=422, detail=f"Invalid JSON response from AI: {str(e)}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Schema generation failed: {str(e)}")
 
 @app.get("/")
 async def read_root():
