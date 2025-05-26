@@ -36,7 +36,7 @@ const TYPE_HANDLERS = {
     null: { getDefault: () => ({ type: "null", required: false, validation: {} }) }
 };
 
-// This function removes unnecessary keys based on the type of attribute
+// Removes unnecessary keys based on the type of attribute
 const trimAttribute = (attribute) => {
     if (!attribute || typeof attribute !== 'object') {
         console.error("Invalid attribute:", attribute);
@@ -64,7 +64,7 @@ const trimAttribute = (attribute) => {
     );
 };
 
-// This function normalizes the attribute to ensure it has the correct structure and properties
+// Normalizes the attribute to ensure it has the correct structure and properties
 export const normalizeAttribute = (attribute) => {
     if (!attribute || typeof attribute !== 'object') {
         console.error("Invalid attribute:", attribute);
@@ -94,10 +94,9 @@ export const normalizeAttribute = (attribute) => {
     return attribute;
 };
 
-// This function checks if the selected key path is valid and if only one field is marked as isKey
+// Checks if the selected key path is valid and if only one field is marked as isKey
 export const validateIsKey = (attributes, selectedKeyPath) => {
     let keyCount = 0;
-
     const traverse = (obj, path = "", isRoot = true) => {
         for (const key in obj) {
             const attr = obj[key];
@@ -115,9 +114,7 @@ export const validateIsKey = (attributes, selectedKeyPath) => {
             }
         }
     };
-
-    traverse(attributes);
-
+    traverse(attributes); // Start traversal from the root
     if (keyCount > 0) {
         return { valid: false, reason: "Only one field can be marked as isKey." };
     }
@@ -125,8 +122,10 @@ export const validateIsKey = (attributes, selectedKeyPath) => {
     return { valid: true };
 };
 
+// Returns the appropriate handler for the given type
 export const getTypeHandler = (type) => TYPE_HANDLERS[type] || TYPE_HANDLERS.string;
 
+// Creates a new attribute with the default values for the given type
 export const createAttribute = (type, isNested = false) => {
     const attribute = getTypeHandler(type).getDefault();
     if (isNested && (type === 'object' || type === 'array')) {
@@ -135,6 +134,7 @@ export const createAttribute = (type, isNested = false) => {
     return attribute;
 };
 
+// Updates an attribute in the current attributes object based on the keyPath and field
 export const updateAttribute = (currentAttributes, keyPath, field, value) => {
     const keys = keyPath.split('.');
     const updatedAttributes = JSON.parse(JSON.stringify(currentAttributes));
@@ -153,6 +153,7 @@ export const updateAttribute = (currentAttributes, keyPath, field, value) => {
 
     const finalKey = keys[keys.length - 1];
 
+    // Event handlers for different fields
     if (field === 'type') {
         current[finalKey] = createAttribute(value, keyPath.includes('.'));
         current[finalKey] = normalizeAttribute(current[finalKey]);
@@ -166,7 +167,6 @@ export const updateAttribute = (currentAttributes, keyPath, field, value) => {
                 newObj[k] = current[k];
             }
         });
-        // Replace all keys in current with newObj's keys
         Object.keys(current).forEach(k => delete current[k]);
         Object.assign(current, newObj);
     } else if (field === 'isKey') {
@@ -194,6 +194,5 @@ export const updateAttribute = (currentAttributes, keyPath, field, value) => {
         current[finalKey][field] = value;
         current[finalKey] = normalizeAttribute(current[finalKey]);
     }
-
     return updatedAttributes;
 };
