@@ -19,7 +19,8 @@ function JsonCard({ entity }) {
   );
 
   return (
-    <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[225px] min-h-[300px] max-h-[300px] max-w-[250px] border border-gray-700 overflow-auto overflow-x-auto custom-scrollbar">
+    <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg
+    min-w-[225px] min-h-[300px] max-h-[300px] max-w-[250px] border border-gray-700 overflow-auto overflow-x-auto custom-scrollbar">
       <h3 className="text-lg font-bold mb-2 text-cyan-400">{entity.name || "Unnamed Collection"}</h3>
       <hr className="border-gray-600 mb-2" />
       <ul className="text-sm space-y-1">

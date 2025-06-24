@@ -16,7 +16,7 @@ function AdvPanel({ schema, loading, elapsedTime, onEdit, onAdd }) {
               ))}
               <div
                 onClick={onAdd}
-                className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[200px] min-h-[300px] border border-dotted border-gray-500 flex items-center justify-center cursor-pointer"
+                className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] border border-dotted border-gray-500 flex items-center justify-center cursor-pointer"
               >
                 <span className="add-card text-7xl text-cyan-400">+</span>
               </div>

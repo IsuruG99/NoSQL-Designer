@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { SchemaContext } from '../SchemaContext';
 import './customScrollbar.css';
 
-function AdvCard({ entity, onEdit }) {
+function AdvCard({ entity, onEdit, attributes, listeners, setNodeRef, isDragging }) {
     const { setSelectedEntity, setOriginalSelectedEntity, setTempSelectedEntity } = useContext(SchemaContext);
 
     if (!entity || !entity.name || !entity.attributes) {
@@ -42,7 +42,12 @@ function AdvCard({ entity, onEdit }) {
     };
 
     return (
-        <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] max-h-[300px] max-w-[200px] border border-gray-700 overflow-auto overflow-x-auto custom-scrollbar">
+        <div
+            ref={setNodeRef}
+            {...attributes}
+            {...listeners}
+            className={`json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] max-h-[300px] max-w-[200px] border border-gray-700 overflow-auto overflow-x-auto custom-scrollbar transition-opacity ${isDragging ? 'opacity-50' : ''}`}
+        >
             <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-bold text-cyan-400">{entity.name}</h3>
                 <button onClick={handleEditClick} className="px-4 py-2 text-white min-h-10 rounded bg-blue-500 h-10 hover:bg-blue-600 border-blue-800 border-b-3">Edit</button>

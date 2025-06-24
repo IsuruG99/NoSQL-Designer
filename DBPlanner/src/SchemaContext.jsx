@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from 'react';
+import { createContext, useState, useEffect, useCallback } from 'react';
 
 export const SchemaContext = createContext();
 
@@ -12,6 +12,38 @@ export const SchemaProvider = ({ children }) => {
       return null;
     }
   });
+
+  // Entities state, derived from schema.entities or empty array
+  const [entities, setEntitiesState] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('schema'));
+      return s?.entities || [];
+    } catch {
+      return [];
+    }
+  });
+
+  // Keep entities in sync with schema
+  useEffect(() => {
+    if (schema && Array.isArray(schema.entities)) {
+      setEntitiesState(schema.entities);
+    }
+  }, [schema]);
+
+  // When entities change, update schema and localStorage
+  const setEntities = useCallback((newEntities) => {
+    setEntitiesState(newEntities);
+    setSchema(prev => {
+      if (!prev) return { entities: newEntities };
+      return { ...prev, entities: newEntities };
+    });
+  }, [setSchema]);
+
+  useEffect(() => {
+    if (schema !== null) {
+      localStorage.setItem('schema', JSON.stringify(schema));
+    }
+  }, [schema]);
 
   const [selectedEntity, setSelectedEntity] = useState(() => {
     try {
@@ -44,12 +76,6 @@ export const SchemaProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    if (schema !== null) {
-      localStorage.setItem('schema', JSON.stringify(schema));
-    }
-  }, [schema]);
-
-  useEffect(() => {
     localStorage.setItem('selectedEntity', JSON.stringify(selectedEntity));
   }, [selectedEntity]);
 
@@ -64,6 +90,7 @@ export const SchemaProvider = ({ children }) => {
   return (
     <SchemaContext.Provider value={{
       schema, setSchema,
+      entities, setEntities,
       selectedEntity, setSelectedEntity,
       originalSelectedEntity, setOriginalSelectedEntity,
       tempSelectedEntity, setTempSelectedEntity

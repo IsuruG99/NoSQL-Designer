@@ -1,23 +1,35 @@
-Current plan
+TODOLIST
+
+TODO (Main Points)
+- Drag & Drop for Editor (dnd-core and dnd-sortable)
+- Delete Card in Editor
+- Cassandra Export
 
 Backend Functionality
-1. None for now
+1. Chutes Connectivity (DS V3 5024)
+2. Prompt Mostly Refined
+3. Prompt failsafe set (3 Repeats, 120s wait time)
 
 Designer Functionality
 1. Add Card function (Basics Set up)
 2. Add Attribute function
 - Only show Add for base level attributes
+3. Edit Card Functions Almost All Complete
+- Delete Card is not defined.
+
+Export Functionality 
+1. Basic JSON Download
+2. Mongodb (JSON Per Collection)
 
 Additional Functionality
 1. Editor Page ideas
 - Search
 - Visible Grid
 - Drag N Drop
-- Card Inner Scroll only affect attributes (freezepane the title)
 
 Card Editor Ideas
 - Attribute buttons only show on hover?
 
-
-last change
--was implementing add card function, not sure what i was doing though
+Last change
+- dnd-core and dnd-sortable installed
+- Refining Prompt

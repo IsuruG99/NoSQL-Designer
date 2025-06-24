@@ -5,13 +5,13 @@ function Panel({ schema, loading, elapsedTime }) {
     const collections = schema?.collections || null;
 
     return (
-        <div className="panel flex flex-col p-4 h-full mt-5">
+        <div className="panel flex flex-col h-full mt-5">
             <h2 className="text-white text-xl mb-2 text-center">Drawing Panel</h2>
             {loading ? (
                 <p className="text-white">⏳ Waiting for backend... {elapsedTime} sec elapsed</p>
             ) : (
                 collections && typeof collections === 'object' ? (
-                    <div className="panel__output grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 place-items-center mt-5">
+                    <div className="panel__output grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xl:gap-20 place-items-center mt-5">
                         {Object.entries(collections).map(([name, collection], index) => (
                             <JsonCard key={index} entity={collection} />
                         ))}

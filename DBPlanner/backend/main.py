@@ -29,14 +29,13 @@ async def get_aiohttp_session():
     finally:
         await session.close()
 
-async def invoke_chute(prompt: str) -> str:
-    """Execute LLM call with proper async resource handling"""
+async def invoke_chute(prompt: str) -> Optional[str]:
+    """Execute LLM call with proper async resource handling and retry on timeout or connection error"""
     api_token = return_token()
     headers = {
         "Authorization": f"Bearer {api_token}",
         "Content-Type": "application/json"
     }
-    
     body = {
         "model": "deepseek-ai/DeepSeek-V3-0324",
         "messages": [{"role": "user", "content": prompt}],
@@ -45,33 +44,40 @@ async def invoke_chute(prompt: str) -> str:
         "temperature": 0.7
     }
 
-    full_response = []
-    async with get_aiohttp_session() as session:
-        try:
-            async with session.post(
-                "https://llm.chutes.ai/v1/chat/completions",
-                headers=headers,
-                json=body,
-                timeout=aiohttp.ClientTimeout(total=30)
-            ) as response:
-                
-                async for line in response.content:
-                    if line.startswith(b"data: "):
-                        data = line[6:].decode("utf-8").strip()
-                        if data == "[DONE]":
-                            break
-                        try:
-                            chunk = json.loads(data)
-                            if content := chunk.get("choices", [{}])[0].get("delta", {}).get("content"):
-                                full_response.append(content)
-                        except json.JSONDecodeError:
-                            continue
+    max_retries = 3
+    for attempt in range(1, max_retries + 1):
+        full_response = []
+        async with get_aiohttp_session() as session:
+            try:
+                async with session.post(
+                    "https://llm.chutes.ai/v1/chat/completions",
+                    headers=headers,
+                    json=body,
+                    timeout=aiohttp.ClientTimeout(total=120)
+                ) as response:
 
-            clean_response = "".join(full_response)
-            return re.sub(r'\n{3,}', '\n\n', clean_response).strip()
-            
-        except (aiohttp.ClientError, asyncio.TimeoutError) as e:
-            raise HTTPException(status_code=500, detail=f"API connection failed: {str(e)}")
+                    async for line in response.content:
+                        if line.startswith(b"data: "):
+                            data = line[6:].decode("utf-8").strip()
+                            if data == "[DONE]":
+                                break
+                            try:
+                                chunk = json.loads(data)
+                                if content := chunk.get("choices", [{}])[0].get("delta", {}).get("content"):
+                                    full_response.append(content)
+                            except json.JSONDecodeError:
+                                continue
+
+                clean_response = "".join(full_response)
+                return re.sub(r'\n{3,}', '\n\n', clean_response).strip()
+
+            except (asyncio.TimeoutError, aiohttp.ClientError) as e:
+                if attempt < max_retries:
+                    print(f"Attempt {attempt} failed: {str(e)}. Retrying...")
+                    await asyncio.sleep(2)
+                    continue  # Retry
+                else:
+                    raise HTTPException(status_code=500, detail=f"API connection failed after {max_retries} attempts: {str(e)}")
 
 class SchemaRequest(BaseModel):
     description: str
@@ -175,19 +181,24 @@ async def generate(data: SchemaRequest):
         f"Generate NoSQL JSON schema collections section exactly matching this structure:\n"
         f"{json.dumps(PROMPT_SCHEMA['collections'], indent=2)}\n\n"
         f"Requirements:\n"
-        f"- Description: {data.description}\n"
-        f"- Entities: {data.entities or 'none'}\n"
-        f"- Constraints: {data.constraints or 'none'}\n\n"
+        f"- Description: {data.description}.\n"
+        f"- Known Entities (if any): {data.entities or 'none'}.\n"
+        f"- Known Constraints (if any): {data.constraints or 'none'}.\n\n"
         "Rules:\n"
-        "1. Maintain exact type definitions and nesting structure as shown in the example\n"
-        "2. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}')\n"
-        "3. Include only valid attributes based on the data types shown in the example\n"
-        "4. Do not include any additional metadata or schema information\n"
-        "5. Ensure all required fields are marked and validation rules are properly set"
+        "1. Maintain exact type definitions and nesting structure as shown in the example.\n"
+        "2. If nested objects are used, define their subfields with types.\n"
+        "3. Use plural names for collections where appropriate.\n"
+        "4. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}').\n"
+        "5. Include only valid attributes based on the data types shown in the example.\n"
+        "6. If using enum, provide a small example list; avoid bare 'enum'.\n"
+        "7. Avoid 'null' as a type unless justified, and give context.\n"
+        "8. Do not use 'null' as a standalone type; use optional fields instead."
     )
 
     try:
         raw_json = await invoke_chute(prompt)
+        if not isinstance(raw_json, str):
+          raise HTTPException(status_code=500, detail="No response from LLM.")
         try:
             # Extract the JSON portion from the response
             json_start = raw_json.find('{')
