@@ -1,8 +1,6 @@
 TODOLIST
 
 TODO (Main Points)
-- Drag & Drop for Editor (dnd-core and dnd-sortable)
-- Delete Card in Editor
 - Cassandra Export
 
 Backend Functionality
@@ -15,7 +13,8 @@ Designer Functionality
 2. Add Attribute function
 - Only show Add for base level attributes
 3. Edit Card Functions Almost All Complete
-- Delete Card is not defined.
+4. Delete Card inside modal
+5. Drag n Drop functionality 
 
 Export Functionality 
 1. Basic JSON Download
@@ -25,11 +24,12 @@ Additional Functionality
 1. Editor Page ideas
 - Search
 - Visible Grid
-- Drag N Drop
 
 Card Editor Ideas
 - Attribute buttons only show on hover?
+- Idk, a better UI? never happy
 
 Last change
-- dnd-core and dnd-sortable installed
+- dnd works
+- delete collection inside editor
 - Refining Prompt
