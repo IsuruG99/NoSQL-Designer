@@ -21,6 +21,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         setSelectedEntity
     } = useContext(SchemaContext);
 
+    const { entities, setEntities } = useContext(SchemaContext);
     const [entityName, setEntityName] = useState(isNewCard ? "" : tempSelectedEntity?.name || "");
     const [entityDescription, setEntityDescription] = useState(isNewCard ? "" : tempSelectedEntity?.description || "");
     const [tempKeys, setTempKeys] = useState(Object.keys(tempSelectedEntity?.attributes || {}));
@@ -80,19 +81,28 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                 throw new Error("Collection must have at least one attribute.");
             }
 
-            const updatedSchema = { ...schema, collections: { ...schema.collections } };
-
-            if (!isNewCard && originalSelectedEntity?.name) {
-                delete updatedSchema.collections[originalSelectedEntity.name];
+            let updatedEntities;
+            if (isNewCard) {
+                // Add new entity
+                updatedEntities = [
+                    ...entities,
+                    {
+                        name: entityName,
+                        description: entityDescription,
+                        attributes: tempSelectedEntity.attributes
+                    }
+                ];
+            } else {
+                // Edit existing entity
+                updatedEntities = entities.map(e =>
+                    e.name === originalSelectedEntity.name
+                        ? { ...e, name: entityName, description: entityDescription, attributes: tempSelectedEntity.attributes }
+                        : e
+                );
             }
 
-            updatedSchema.collections[entityName] = {
-                name: entityName,
-                description: entityDescription,
-                attributes: tempSelectedEntity.attributes
-            };
+            setEntities(updatedEntities);
 
-            setSchema(updatedSchema);
             setOriginalSelectedEntity(null);
             setTempSelectedEntity(null);
             setSelectedEntity(null);
@@ -101,7 +111,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             alert(error.message);
         }
     };
-
     return (
         <div className="w-full h-full flex flex-col bg-gray-800 rounded-lg shadow-lg">
             {/* Header Section */}

@@ -1,20 +1,26 @@
 import React, { useContext } from 'react';
 import { DndContext, closestCenter } from '@dnd-kit/core';
-import { arrayMove, SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { arrayMove, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import AdvCard from './advCard';
 import { SchemaContext } from '../SchemaContext';
 
 function SortableAdvCard({ entity, onEdit, id }) {
-    const { attributes, listeners, setNodeRef, isDragging } = useSortable({ id });
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
+
     return (
-        <AdvCard
-            entity={entity}
-            onEdit={onEdit}
-            attributes={attributes}
-            listeners={listeners}
-            setNodeRef={setNodeRef}
-            isDragging={isDragging}
-        />
+        <div
+            ref={setNodeRef}
+            style={{
+                transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
+                transition,
+                opacity: isDragging ? 0.7 : 1,
+            }}
+            className="relative"
+        >
+            
+            <AdvCard entity={entity} onEdit={onEdit} dragHandleprops={{...attributes, ...listeners }}
+            />
+        </div>
     );
 }
 
@@ -27,7 +33,7 @@ function AdvCardGrid({ entities, onEdit }) {
             const oldIndex = entities.findIndex(e => e.name === active.id);
             const newIndex = entities.findIndex(e => e.name === over.id);
             const newEntities = arrayMove(entities, oldIndex, newIndex);
-            setEntities(newEntities); // Update SchemaContext with new order
+            setEntities(newEntities);
         }
     };
 
@@ -35,18 +41,16 @@ function AdvCardGrid({ entities, onEdit }) {
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext
                 items={entities.map(e => e.name)}
-                strategy={verticalListSortingStrategy}
+                strategy={rectSortingStrategy}
             >
-                <div className="grid grid-cols-3 gap-4">
-                    {entities.map(entity => (
-                        <SortableAdvCard
-                            key={entity.name}
-                            id={entity.name}
-                            entity={entity}
-                            onEdit={onEdit}
-                        />
-                    ))}
-                </div>
+                {entities.map(entity => (
+                    <SortableAdvCard
+                        key={entity.name}
+                        id={entity.name}
+                        entity={entity}
+                        onEdit={onEdit}
+                    />
+                ))}
             </SortableContext>
         </DndContext>
     );
