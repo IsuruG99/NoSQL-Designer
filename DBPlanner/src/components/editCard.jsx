@@ -74,6 +74,20 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         updateAttributes(updatedAttributes);
     };
 
+    const handleDelete = () => {
+        if (!originalSelectedEntity?.name) return;
+        if (!window.confirm(`Are you sure you want to delete "${originalSelectedEntity.name}"? This cannot be undone.`)) return;
+
+        // Remove the entity from entities array
+        const updatedEntities = entities.filter(e => e.name !== originalSelectedEntity.name);
+        setEntities(updatedEntities);
+
+        setOriginalSelectedEntity(null);
+        setTempSelectedEntity(null);
+        setSelectedEntity(null);
+        handleCloseModal();
+    };
+
     const handleSave = () => {
         try {
             if (!entityName.trim()) throw new Error("Collection name cannot be blank.");
@@ -163,21 +177,32 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             </div>
 
             <hr className="border-gray-600" />
+            <div className="p-4 flex justify-between items-center">
+                {/* Left: Delete Collection (only show if not new card) */}
+                {!isNewCard ? (
+                    <button
+                        onClick={handleDelete}
+                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-800 border-red-500 border-b-3"
+                    >
+                        Delete Collection
+                    </button>
+                ) : <div />} {/* Empty div to keep spacing if new card */}
 
-            {/* Footer Actions */}
-            <div className="p-4 flex justify-end space-x-2">
-                <button
-                    onClick={handleSave}
-                    className="px-4 py-2 text-white rounded bg-green-600 hover:bg-green-700 border-green-800 border-b-3"
-                >
-                    {isNewCard ? 'Create' : 'Update'}
-                </button>
-                <button
-                    onClick={handleCloseModal}
-                    className="px-4 py-2 text-white rounded bg-red-600 hover:bg-red-700 border-red-800 border-b-3"
-                >
-                    Cancel
-                </button>
+                {/* Right: Cancel/Save */}
+                <div className="flex space-x-2">
+                    <button
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-700 border-red-500 border-b-3"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        className="px-4 py-2 text-white rounded bg-green-800 hover:bg-green-700 border-green-500 border-b-3"
+                    >
+                        {isNewCard ? 'Create' : 'Update'}
+                    </button>
+                </div>
             </div>
         </div>
     );
