@@ -21,6 +21,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         setSelectedEntity
     } = useContext(SchemaContext);
 
+    const { entities, setEntities } = useContext(SchemaContext);
     const [entityName, setEntityName] = useState(isNewCard ? "" : tempSelectedEntity?.name || "");
     const [entityDescription, setEntityDescription] = useState(isNewCard ? "" : tempSelectedEntity?.description || "");
     const [tempKeys, setTempKeys] = useState(Object.keys(tempSelectedEntity?.attributes || {}));
@@ -73,6 +74,20 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         updateAttributes(updatedAttributes);
     };
 
+    const handleDelete = () => {
+        if (!originalSelectedEntity?.name) return;
+        if (!window.confirm(`Are you sure you want to delete "${originalSelectedEntity.name}"? This cannot be undone.`)) return;
+
+        // Remove the entity from entities array
+        const updatedEntities = entities.filter(e => e.name !== originalSelectedEntity.name);
+        setEntities(updatedEntities);
+
+        setOriginalSelectedEntity(null);
+        setTempSelectedEntity(null);
+        setSelectedEntity(null);
+        handleCloseModal();
+    };
+
     const handleSave = () => {
         try {
             if (!entityName.trim()) throw new Error("Collection name cannot be blank.");
@@ -80,19 +95,28 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                 throw new Error("Collection must have at least one attribute.");
             }
 
-            const updatedSchema = { ...schema, collections: { ...schema.collections } };
-
-            if (!isNewCard && originalSelectedEntity?.name) {
-                delete updatedSchema.collections[originalSelectedEntity.name];
+            let updatedEntities;
+            if (isNewCard) {
+                // Add new entity
+                updatedEntities = [
+                    ...entities,
+                    {
+                        name: entityName,
+                        description: entityDescription,
+                        attributes: tempSelectedEntity.attributes
+                    }
+                ];
+            } else {
+                // Edit existing entity
+                updatedEntities = entities.map(e =>
+                    e.name === originalSelectedEntity.name
+                        ? { ...e, name: entityName, description: entityDescription, attributes: tempSelectedEntity.attributes }
+                        : e
+                );
             }
 
-            updatedSchema.collections[entityName] = {
-                name: entityName,
-                description: entityDescription,
-                attributes: tempSelectedEntity.attributes
-            };
+            setEntities(updatedEntities);
 
-            setSchema(updatedSchema);
             setOriginalSelectedEntity(null);
             setTempSelectedEntity(null);
             setSelectedEntity(null);
@@ -101,7 +125,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             alert(error.message);
         }
     };
-
     return (
         <div className="w-full h-full flex flex-col bg-gray-800 rounded-lg shadow-lg">
             {/* Header Section */}
@@ -112,7 +135,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         type="text"
                         value={entityName}
                         onChange={handleNameChange}
-                        className="text-xl font-bold bg-gray-700 text-white p-1 rounded w-full"
+                        className="text-xl px-2 font-bold bg-gray-700 text-white p-1 rounded w-full"
                     />
                 </div>
 
@@ -122,7 +145,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         type="text"
                         value={entityDescription}
                         onChange={handleDescriptionChange}
-                        className="bg-gray-700 text-white p-1 rounded w-full"
+                        className="bg-gray-700 px-2 text-white p-1 rounded w-full"
                     />
                 </div>
             </div>
@@ -154,21 +177,32 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             </div>
 
             <hr className="border-gray-600" />
+            <div className="p-4 flex justify-between items-center">
+                {/* Left: Delete Collection (only show if not new card) */}
+                {!isNewCard ? (
+                    <button
+                        onClick={handleDelete}
+                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-800 border-red-500 border-b-3"
+                    >
+                        Delete Collection
+                    </button>
+                ) : <div />}
 
-            {/* Footer Actions */}
-            <div className="p-4 flex justify-end space-x-2">
-                <button
-                    onClick={handleSave}
-                    className="px-4 py-2 text-white rounded bg-green-600 hover:bg-green-700 border-green-800 border-b-3"
-                >
-                    {isNewCard ? 'Create' : 'Update'}
-                </button>
-                <button
-                    onClick={handleCloseModal}
-                    className="px-4 py-2 text-white rounded bg-red-600 hover:bg-red-700 border-red-800 border-b-3"
-                >
-                    Cancel
-                </button>
+                {/* Right: Cancel/Save */}
+                <div className="flex space-x-2">
+                    <button
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-700 border-red-500 border-b-3"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSave}
+                        className="px-4 py-2 text-white rounded bg-green-800 hover:bg-green-700 border-green-500 border-b-3"
+                    >
+                        {isNewCard ? 'Create' : 'Update'}
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -221,6 +255,7 @@ function AttributeEditor({
     return (
         <Wrapper className="bg-gray-800">
             <li className="bg-gray-700 rounded-lg p-3">
+                {/* Header with toggle */}
                 <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
                     <div className="font-medium text-white">{keyName || "Unnamed attribute"}</div>
                     <div className="flex items-center">
@@ -245,7 +280,7 @@ function AttributeEditor({
                                 value={keyName}
                                 onChange={e => setKeyName(e.target.value)}
                                 onBlur={handleKeyRename}
-                                className="bg-gray-800 text-white p-1 rounded w-full"
+                                className="bg-gray-800 px-2 text-white p-1 rounded w-full"
                             />
                         </div>
 
@@ -342,7 +377,7 @@ function AttributeEditor({
                                                 placeholder="Custom key"
                                                 value={customKey}
                                                 onChange={e => setCustomKey(e.target.value)}
-                                                className="bg-gray-800 text-white p-1 rounded flex-1"
+                                                className="bg-gray-800 px-2 text-white p-1 rounded flex-1"
                                             />
                                         )}
                                         <input
@@ -350,7 +385,7 @@ function AttributeEditor({
                                             placeholder="Value (e.g., ^[A-Z]+$)"
                                             value={validationValue}
                                             onChange={(e) => setValidationValue(e.target.value)}
-                                            className="bg-gray-800 text-white p-1 rounded flex-1"
+                                            className="bg-gray-800 px-2 text-white p-1 rounded flex-1"
                                         />
                                         <button
                                             onClick={handleValidationAdd}

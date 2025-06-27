@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { SchemaContext } from '../SchemaContext';
 import './customScrollbar.css';
 
-function AdvCard({ entity, onEdit, attributes, listeners, setNodeRef, isDragging }) {
+function AdvCard({ entity, onEdit, dragHandleprops }) {
     const { setSelectedEntity, setOriginalSelectedEntity, setTempSelectedEntity } = useContext(SchemaContext);
 
     if (!entity || !entity.name || !entity.attributes) {
@@ -42,16 +42,29 @@ function AdvCard({ entity, onEdit, attributes, listeners, setNodeRef, isDragging
     };
 
     return (
-        <div
-            ref={setNodeRef}
-            {...attributes}
-            {...listeners}
-            className={`json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] max-h-[300px] max-w-[200px] border border-gray-700 overflow-auto overflow-x-auto custom-scrollbar transition-opacity ${isDragging ? 'opacity-50' : ''}`}
-        >
+        <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] max-h-[300px] max-w-[200px] border border-gray-700 overflow-auto overflow-x-auto custom-scrollbar">
             <div className="flex justify-between items-center mb-2">
-                <h3 className="text-lg font-bold text-cyan-400">{entity.name}</h3>
-                <button onClick={handleEditClick} className="px-4 py-2 text-white min-h-10 rounded bg-blue-500 h-10 hover:bg-blue-600 border-blue-800 border-b-3">Edit</button>
+                <h3
+                    className="text-lg font-bold text-cyan-400 cursor-move"
+                    {...(dragHandleprops || {})}
+                    title="Drag to reorder"
+                >
+                    {entity.name}
+                </h3>
+                <button
+                    onClick={handleEditClick}
+                    className="w-7 h-7 flex items-center justify-center bg-blue-600 rounded shadow hover:bg-blue-700 transition"
+                    title="Edit"
+                    style={{ minWidth: 0, minHeight: 0, padding: 0 }}
+                >
+                    {/* Pencil (edit) icon */}
+                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="text-white">
+                        <path d="M4 13.5V16h2.5l7.06-7.06-2.5-2.5L4 13.5z" fill="currentColor" />
+                        <path d="M14.85 6.15a1 1 0 0 0 0-1.41l-1.59-1.59a1 1 0 0 0-1.41 0l-1.13 1.13 2.5 2.5 1.13-1.13z" fill="currentColor" />
+                    </svg>
+                </button>
             </div>
+
             <hr className="border-gray-600 mb-2" />
             <p className="text-gray-400 text-sm mb-2">{entity.description || 'No description'}</p>
             <ul className="text-sm space-y-1">

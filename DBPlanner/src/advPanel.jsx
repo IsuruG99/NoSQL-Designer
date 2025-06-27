@@ -1,7 +1,10 @@
-import React from 'react';
-import AdvCard from './components/advCard.jsx';
+import React, { useContext } from 'react';
+import AdvCardGrid from './components/AdvCardGrid.jsx';
+import { SchemaContext } from './SchemaContext';
 
-function AdvPanel({ schema, loading, elapsedTime, onEdit, onAdd }) {
+function AdvPanel({ loading, elapsedTime, onEdit, onAdd }) {
+  const { entities } = useContext(SchemaContext);
+
   return (
     <div className="panel flex flex-col p-4 min-h-screen h-full mx-10 mt-10">
       <h2 className="text-white text-xl mb-2 text-center">Drawing Panel</h2>
@@ -9,16 +12,21 @@ function AdvPanel({ schema, loading, elapsedTime, onEdit, onAdd }) {
         <p className="text-white">⏳ Waiting for backend... {elapsedTime} sec elapsed</p>
       ) : (
         <>
-          {schema?.collections && typeof schema.collections === 'object' ? (
-            <div className="panel__output grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 place-items-center items-fit w-full">
-              {Object.keys(schema.collections).map((key, index) => (
-                <AdvCard key={index} entity={schema.collections[key]} onEdit={onEdit} />
-              ))}
-              <div
-                onClick={onAdd}
-                className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] border border-dotted border-gray-500 flex items-center justify-center cursor-pointer"
-              >
-                <span className="add-card text-7xl text-cyan-400">+</span>
+          {entities.length > 0 ? (
+            <div className="panel__output w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 place-items-center items-fit w-full">
+                {/* AdvCardGrid renders only the cards */}
+                <AdvCardGrid entities={entities} onEdit={onEdit} />
+                {/* Add Card button as a grid item */}
+                <div
+                  onClick={onAdd}
+                  className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] max-h-[300px] max-w-[200px] border border-dotted border-cyan-400 flex flex-col items-center justify-center cursor-pointer transition hover:bg-gray-700"
+                  style={{ userSelect: 'none' }}
+                  title="Add new card"
+                >
+                  <span className="add-card text-7xl text-cyan-400 mb-2">+</span>
+                  <span className="text-cyan-300 font-medium text-lg">Add Card</span>
+                </div>
               </div>
             </div>
           ) : (

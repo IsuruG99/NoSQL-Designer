@@ -30,14 +30,32 @@ export const SchemaProvider = ({ children }) => {
     }
   }, [schema]);
 
-  // When entities change, update schema and localStorage
+  // When entities change, update schema, collections, and localStorage
   const setEntities = useCallback((newEntities) => {
-    setEntitiesState(newEntities);
-    setSchema(prev => {
-      if (!prev) return { entities: newEntities };
-      return { ...prev, entities: newEntities };
+  setSchema(prev => {
+    if (!prev) {
+      // If schema is missing, create a minimal one
+      const collections = {};
+      newEntities.forEach(entity => {
+        collections[entity.name] = entity;
+      });
+      // Update both entities and collections in schema
+      return { entities: newEntities, collections };
+    }
+    // Rebuild collections object in the new order
+    const newCollections = {};
+    newEntities.forEach(entity => {
+      newCollections[entity.name] = entity;
     });
-  }, [setSchema]);
+    // Update schema with new entities array and collections object
+    const updatedSchema = { ...prev, entities: newEntities, collections: newCollections };
+    // Also update localStorage immediately for consistency
+    localStorage.setItem('schema', JSON.stringify(updatedSchema));
+    return updatedSchema;
+  });
+  // Update UI state for entities
+  setEntitiesState(newEntities);
+}, [setSchema]);
 
   useEffect(() => {
     if (schema !== null) {
