@@ -135,7 +135,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         type="text"
                         value={entityName}
                         onChange={handleNameChange}
-                        className="text-xl font-bold bg-gray-700 text-white p-1 rounded w-full"
+                        className="text-xl px-2 font-bold bg-gray-700 text-white p-1 rounded w-full"
                     />
                 </div>
 
@@ -145,7 +145,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         type="text"
                         value={entityDescription}
                         onChange={handleDescriptionChange}
-                        className="bg-gray-700 text-white p-1 rounded w-full"
+                        className="bg-gray-700 px-2 text-white p-1 rounded w-full"
                     />
                 </div>
             </div>
@@ -186,7 +186,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                     >
                         Delete Collection
                     </button>
-                ) : <div />} {/* Empty div to keep spacing if new card */}
+                ) : <div />}
 
                 {/* Right: Cancel/Save */}
                 <div className="flex space-x-2">
@@ -255,6 +255,7 @@ function AttributeEditor({
     return (
         <Wrapper className="bg-gray-800">
             <li className="bg-gray-700 rounded-lg p-3">
+                {/* Header with toggle */}
                 <div className="flex justify-between items-center cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
                     <div className="font-medium text-white">{keyName || "Unnamed attribute"}</div>
                     <div className="flex items-center">
@@ -279,7 +280,7 @@ function AttributeEditor({
                                 value={keyName}
                                 onChange={e => setKeyName(e.target.value)}
                                 onBlur={handleKeyRename}
-                                className="bg-gray-800 text-white p-1 rounded w-full"
+                                className="bg-gray-800 px-2 text-white p-1 rounded w-full"
                             />
                         </div>
 
@@ -376,7 +377,7 @@ function AttributeEditor({
                                                 placeholder="Custom key"
                                                 value={customKey}
                                                 onChange={e => setCustomKey(e.target.value)}
-                                                className="bg-gray-800 text-white p-1 rounded flex-1"
+                                                className="bg-gray-800 px-2 text-white p-1 rounded flex-1"
                                             />
                                         )}
                                         <input
@@ -384,7 +385,7 @@ function AttributeEditor({
                                             placeholder="Value (e.g., ^[A-Z]+$)"
                                             value={validationValue}
                                             onChange={(e) => setValidationValue(e.target.value)}
-                                            className="bg-gray-800 text-white p-1 rounded flex-1"
+                                            className="bg-gray-800 px-2 text-white p-1 rounded flex-1"
                                         />
                                         <button
                                             onClick={handleValidationAdd}
