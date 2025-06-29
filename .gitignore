@@ -1,2 +1,6 @@
 DBPlanner/backend/returnToken.py
 DBPlanner/backend/__pycache__/
+
+node_modules/
+DBPlanner/frontend/node_modules/
+backend.bat

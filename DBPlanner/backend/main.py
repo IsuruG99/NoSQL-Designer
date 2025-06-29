@@ -83,6 +83,8 @@ class SchemaRequest(BaseModel):
     description: str
     entities: Optional[str] = None
     constraints: Optional[str] = None
+    mode: Optional[str] = "Detailed"  # "Detailed" or "Simplified"
+
 
 # Must be appended to top after AI generates PROMPT_SCHEMA
 TOP_SCHEMA_SEGMENT = {
@@ -177,23 +179,42 @@ async def generate(data: SchemaRequest):
     if not data.description:
         raise HTTPException(status_code=400, detail="Description is mandatory.")
 
-    prompt = (
-        f"Generate NoSQL JSON schema collections section exactly matching this structure:\n"
+    if data.mode == "Simplified":
+      prompt = (
+        f"You are given a vague description. Your task is to infer a useful NoSQL database schema from it.\n\n"
+        f"Description: {data.description}\n\n"
+        f"Use this sample structure strictly as reference:\n"
         f"{json.dumps(PROMPT_SCHEMA['collections'], indent=2)}\n\n"
-        f"Requirements:\n"
-        f"- Description: {data.description}.\n"
-        f"- Known Entities (if any): {data.entities or 'none'}.\n"
-        f"- Known Constraints (if any): {data.constraints or 'none'}.\n\n"
         "Rules:\n"
-        "1. Maintain exact type definitions and nesting structure as shown in the example.\n"
-        "2. If nested objects are used, define their subfields with types.\n"
-        "3. Use plural names for collections where appropriate.\n"
-        "4. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}').\n"
-        "5. Include only valid attributes based on the data types shown in the example.\n"
-        "6. If using enum, provide a small example list; avoid bare 'enum'.\n"
-        "7. Avoid 'null' as a type unless justified, and give context.\n"
-        "8. Do not use 'null' as a standalone type; use optional fields instead."
+        "1. Infer meaningful collection names and attributes from the sentence.\n"
+        "2. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}').\n"
+        "3. Follow the type definitions and nesting style shown in the example.\n"
+        "4. If nested objects are used, define subfields properly with types.\n"
+        "5. Use plural names for collections where appropriate.\n"
+        "6. Only use valid NoSQL-compatible types (string, number, boolean, object, array, enum, date).\n"
+        "7. If using enum, provide a small example list; do NOT leave enum empty.\n"
+        "8. Avoid 'null' as a standalone type — use optional fields instead.\n"
+        "9. Do not include anything other than the pure JSON object in your output.\n"
     )
+    else:
+        prompt = (
+            f"Generate NoSQL JSON schema collections section exactly matching this structure:\n"
+            f"{json.dumps(PROMPT_SCHEMA['collections'], indent=2)}\n\n"
+            f"Requirements:\n"
+            f"- Description: {data.description}.\n"
+            f"- Known Entities (if any): {data.entities or 'none'}.\n"
+            f"- Known Constraints (if any): {data.constraints or 'none'}.\n\n"
+            "Rules:\n"
+            "1. Maintain exact type definitions and nesting structure as shown in the example.\n"
+            "2. If nested objects are used, define their subfields with types.\n"
+            "3. Use plural names for collections where appropriate.\n"
+            "4. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}').\n"
+            "5. Include only valid attributes based on the data types shown in the example.\n"
+            "6. If using enum, provide a small example list; avoid bare 'enum'.\n"
+            "7. Avoid 'null' as a type unless justified, and give context.\n"
+            "8. Do not use 'null' as a standalone type; use optional fields instead."
+        )
+
 
     try:
         raw_json = await invoke_chute(prompt)
