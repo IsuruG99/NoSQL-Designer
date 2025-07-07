@@ -119,7 +119,7 @@ PROMPT_SCHEMA={
           "required": False
         },
         "EnumField": {
-          "type": "enum",
+          "type": "string",
           "subtype": "enum",
           "values": ["a", "b", "c"]
         },

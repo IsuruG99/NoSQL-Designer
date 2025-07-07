@@ -1,5 +1,7 @@
 import React from 'react';
+import { KeyIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import './customScrollbar.css';
+
 
 function JsonCard({ entity }) {
   if (!entity || !entity.attributes) {
@@ -11,12 +13,75 @@ function JsonCard({ entity }) {
     );
   }
 
-  const renderAttribute = (key, value) => (
-    <li key={key} className="truncate">
-      <strong className="text-cyan-300">{key}:</strong>{" "}
-      <span className="text-gray-300">{value.type}</span>
-    </li>
-  );
+  // Recursive render for nested attributes
+  const renderAttribute = (key, value, depth = 0) => {
+    const star = value.isKey ? (
+  <KeyIcon className="ml-1 inline h-2 w-2 text-yellow-400" title="Primary Key" />
+) : null;
+    const required = value.required ? (
+      <ExclamationCircleIcon className="ml-1 inline h-2 w-2 text-red-400" title="Required" />
+    ) : null;
+
+    if (value.type === "object" && value.properties && Object.keys(value.properties).length > 0) {
+      return (
+        <li key={key} className="truncate">
+          <strong className="text-cyan-300">{key}:</strong>{" "}
+          <span className="text-gray-300">object</span>
+          {star} {required}
+          <ul className="ml-4 border-l border-gray-600 pl-2">
+            {Object.entries(value.properties).map(([subKey, subVal]) =>
+              renderAttribute(subKey, subVal, depth + 1)
+            )}
+          </ul>
+        </li>
+      );
+    }
+    if (value.type === "array" && value.items) {
+      return (
+        <li key={key} className="truncate">
+          <strong className="text-cyan-300">{key}:</strong>{" "}
+          <span className="text-gray-300">array</span>
+          {value.items.type === "object" && value.items.properties ? (
+            <ul className="ml-4 border-l border-gray-600 pl-2">
+              {Object.entries(value.items.properties).map(([subKey, subVal]) =>
+                renderAttribute(subKey, subVal, depth + 1)
+              )}
+            </ul>
+          ) : (
+            <span className="text-gray-400 ml-2">[{value.items.type}]</span>
+          )}
+        </li>
+      );
+    }
+    // Enum display
+    if (value.type === "enum" && value.values) {
+      const maxEnum = 3;
+      const shown = value.values.slice(0, maxEnum);
+      const hasMore = value.values.length > maxEnum;
+      return (
+        <li key={key} className="">
+          <strong className="text-cyan-300">{key}:</strong>{" "}
+          <span className="text-gray-300">enum</span>
+          <div className="flex items-start">
+            <span className="text-gray-500 select-none ml-4 mr-2">|</span>
+            <span
+              className="text-gray-400 break-words"
+              style={{ wordBreak: 'break-word' }}
+            >
+              [{shown.join(', ')}{hasMore ? ', ...' : ''}]
+            </span>
+          </div>
+        </li>
+      );
+    }
+    // Primitive
+    return (
+      <li key={key} className="truncate">
+        <strong className="text-cyan-300">{key}:</strong>{" "}
+        <span className="text-gray-300">{value.type}{star}{required}</span>
+      </li>
+    );
+  };
 
   return (
     <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg

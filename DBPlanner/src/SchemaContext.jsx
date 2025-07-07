@@ -30,38 +30,83 @@ export const SchemaProvider = ({ children }) => {
     }
   }, [schema]);
 
+  const validateEntity = useCallback((entity) => {
+    if (!entity || !entity.attributes) return false;
+
+    let isValid = true;
+    Object.entries(entity.attributes).forEach(([attrName, attrValue]) => {
+      // Check enum fields
+      if (attrValue.subtype === 'enum' && (!attrValue.values || !Array.isArray(attrValue.values))) {
+        console.error(`Enum field ${attrName} is missing values array`);
+        isValid = false;
+      }
+
+      // Check required fields
+      if (attrValue.required && attrValue.type === undefined) {
+        console.error(`Required field ${attrName} is missing type`);
+        isValid = false;
+      }
+    });
+
+    return isValid;
+  }, []);
+
   // When entities change, update schema, collections, and localStorage
   const setEntities = useCallback((newEntities) => {
-  setSchema(prev => {
-    if (!prev) {
-      // If schema is missing, create a minimal one
-      const collections = {};
-      newEntities.forEach(entity => {
-        collections[entity.name] = entity;
-      });
-      // Update both entities and collections in schema
-      return { entities: newEntities, collections };
+    // Validate all entities first
+    const allValid = newEntities.every(validateEntity);
+    if (!allValid) {
+      console.error("Invalid schema data - not saving");
+      return;
     }
-    // Rebuild collections object in the new order
-    const newCollections = {};
-    newEntities.forEach(entity => {
-      newCollections[entity.name] = entity;
+
+    setSchema(prev => {
+      if (!prev) {
+        const collections = {};
+        newEntities.forEach(entity => {
+          collections[entity.name] = entity;
+        });
+        return { entities: newEntities, collections };
+      }
+
+      const newCollections = {};
+      newEntities.forEach(entity => {
+        newCollections[entity.name] = entity;
+      });
+      
+      const updatedSchema = { 
+        ...prev, 
+        entities: newEntities, 
+        collections: newCollections 
+      };
+      
+      localStorage.setItem('schema', JSON.stringify(updatedSchema));
+      return updatedSchema;
     });
-    // Update schema with new entities array and collections object
-    const updatedSchema = { ...prev, entities: newEntities, collections: newCollections };
-    // Also update localStorage immediately for consistency
-    localStorage.setItem('schema', JSON.stringify(updatedSchema));
-    return updatedSchema;
-  });
-  // Update UI state for entities
-  setEntitiesState(newEntities);
-}, [setSchema]);
+    
+    setEntitiesState(newEntities);
+  }, [setSchema, validateEntity]);
+
+  const validateSchema = (schema) => {
+  if (!schema) return false;
+  if (!schema.entities || !Array.isArray(schema.entities)) return false;
+  return schema.entities.every(validateEntity);
+};
 
   useEffect(() => {
     if (schema !== null) {
       localStorage.setItem('schema', JSON.stringify(schema));
     }
   }, [schema]);
+
+  useEffect(() => {
+    if (schema) {
+      const isValid = schema.entities?.every(validateEntity) ?? false;
+      if (!isValid) {
+        console.error("Loaded schema contains invalid data");
+      }
+    }
+  }, [schema, validateEntity]);
 
   const [selectedEntity, setSelectedEntity] = useState(() => {
     try {

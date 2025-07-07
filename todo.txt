@@ -1,7 +1,7 @@
 TODOLIST
 
 TODO (Main Points)
-- Cassandra Export
+- Connect Evnum Values from Entity to Validation Rules
 
 Backend Functionality
 1. Chutes Connectivity (DS V3 5024)
@@ -30,6 +30,6 @@ Card Editor Ideas
 - Idk, a better UI? never happy
 
 Last change
-- dnd works
-- delete collection inside editor
-- Refining Prompt
+- Cassandra Import
+- Refined enum visibility in Entities.
+
