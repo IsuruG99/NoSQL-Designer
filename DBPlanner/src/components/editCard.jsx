@@ -4,7 +4,7 @@ import './customScrollbar.css';
 import {
     DATA_TYPES,
     STORAGE_OPTIONS,
-    COMMON_VALIDATION_KEYS,
+    // COMMON_VALIDATION_KEYS,
     getTypeHandler,
     createAttribute,
     updateAttribute
@@ -215,24 +215,25 @@ function AttributeEditor({
     isNested
 }) {
     const [keyName, setKeyName] = useState(attributeKey);
-    const [validationKey, setValidationKey] = useState("");
-    const [customKey, setCustomKey] = useState("");
-    const [useCustomKey, setUseCustomKey] = useState(false);
-    const [validationValue, setValidationValue] = useState("");
+    const [exampleInput, setExampleInput] = useState("");
+    // const [validationKey, setValidationKey] = useState("");
+    // const [customKey, setCustomKey] = useState("");
+    // const [useCustomKey, setUseCustomKey] = useState(false);
+    // const [validationValue, setValidationValue] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isValidationExpanded, setIsValidationExpanded] = useState(false);
+    // const [isValidationExpanded, setIsValidationExpanded] = useState(false);
 
     useEffect(() => {
         setKeyName(attributeKey);
     }, [attributeKey]);
 
-    const handleValidationAdd = () => {
-        if (validationKey && validationValue) {
-            onAttributeChange(attributeKey, 'validation', { key: validationKey, value: validationValue });
-            setValidationKey("");
-            setValidationValue("");
-        }
-    };
+    // const handleValidationAdd = () => {
+    //     if (validationKey && validationValue) {
+    //         onAttributeChange(attributeKey, 'validation', { key: validationKey, value: validationValue });
+    //         setValidationKey("");
+    //         setValidationValue("");
+    //     }
+    // };
 
     const handleKeyRename = () => {
         if (keyName !== attributeKey && keyName.trim() !== "") {
@@ -337,80 +338,54 @@ function AttributeEditor({
                         )}
                     </div>
 
-                    {/* Validation */}
+                    {/* Examples */}
                     {attributeValue.type !== "null" && (
-                        <div className="mb-3 bg-gray-800 rounded p-2 border border-gray-600">
-                            <div
-                                className="flex items-center justify-between cursor-pointer select-none"
-                                onClick={() => setIsValidationExpanded(v => !v)}
-                            >
-                                <span className="text-gray-300 text-base font-medium">Validation Rules</span>
-                                <span className={`ml-2 text-xs ${isValidationExpanded ? "text-cyan-400" : "text-cyan-300"}`}>
-                                    {isValidationExpanded ? "▲ Hide" : "▼ Show"}
-                                </span>
+                        <div className="mb-3">
+                            <label className="block text-gray-400 text-sm mb-1">Examples</label>
+                            <div className="flex items-center mb-2">
+                                <input
+                                    type="text"
+                                    placeholder="Add example value"
+                                    value={exampleInput}
+                                    onChange={(e) => setExampleInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && exampleInput.trim()) {
+                                            onAttributeChange(attributeKey, 'examples', [...(attributeValue.examples || []), exampleInput.trim()]);
+                                            setExampleInput('');
+                                        }
+                                    }}
+                                    className="bg-gray-800 px-2 text-white p-1 rounded flex-1 mr-2"
+                                />
+                                <button
+                                    onClick={() => {
+                                        if (exampleInput.trim()) {
+                                            onAttributeChange(attributeKey, 'examples', [...(attributeValue.examples || []), exampleInput.trim()]);
+                                            setExampleInput('');
+                                        }
+                                    }}
+                                    className="bg-blue-600 text-white px-2 rounded hover:bg-blue-700"
+                                >
+                                    Add
+                                </button>
                             </div>
-                            {isValidationExpanded && (
-                                <>
-                                    <div className="flex mx-1 space-x-2 mb-2">
-                                        <select
-                                            value={useCustomKey ? "custom" : validationKey}
-                                            onChange={e => {
-                                                if (e.target.value === "custom") {
-                                                    setUseCustomKey(true);
-                                                    setValidationKey("");
-                                                } else {
-                                                    setUseCustomKey(false);
-                                                    setValidationKey(e.target.value);
-                                                }
-                                            }}
-                                            className="bg-gray-800 text-white p-1 rounded flex-1"
-                                        >
-                                            <option value="" disabled>Select rule</option>
-                                            {COMMON_VALIDATION_KEYS.map(key => (
-                                                <option key={key} value={key}>{key}</option>
-                                            ))}
-                                            <option value="custom">Other...</option>
-                                        </select>
-                                        {useCustomKey && (
-                                            <input
-                                                type="text"
-                                                placeholder="Custom key"
-                                                value={customKey}
-                                                onChange={e => setCustomKey(e.target.value)}
-                                                className="bg-gray-800 px-2 text-white p-1 rounded flex-1"
-                                            />
-                                        )}
-                                        <input
-                                            type="text"
-                                            placeholder="Value (e.g., ^[A-Z]+$)"
-                                            value={validationValue}
-                                            onChange={(e) => setValidationValue(e.target.value)}
-                                            className="bg-gray-800 px-2 text-white p-1 rounded flex-1"
-                                        />
-                                        <button
-                                            onClick={handleValidationAdd}
-                                            className="bg-blue-600 text-white px-2 rounded hover:bg-blue-700"
-                                        >
-                                            Add
-                                        </button>
-                                    </div>
-                                    {attributeValue.validation && Object.keys(attributeValue.validation).length > 0 && (
-                                        <div className="mx-1 bg-gray-800 rounded p-1 max-h-32 overflow-y-auto">
-                                            {Object.entries(attributeValue.validation).map(([key, value]) => (
-                                                <div key={key} className="mx-1 flex justify-between items-center mb-1 last:mb-0">
-                                                    <span className="text-cyan-300">{key}:</span>
-                                                    <span className="text-gray-300">{value}</span>
-                                                    <button
-                                                        onClick={() => onAttributeChange(attributeKey, 'deleteValidation', key)}
-                                                        className="text-red-400 hover:text-red-300"
-                                                    >
-                                                        ×
-                                                    </button>
-                                                </div>
-                                            ))}
+                            {attributeValue.examples && attributeValue.examples.length > 0 && (
+                                <div className="bg-gray-800 rounded p-2 max-h-32 overflow-y-auto">
+                                    {attributeValue.examples.map((example, index) => (
+                                        <div key={index} className="flex justify-between items-center mb-1 last:mb-0">
+                                            <span className="text-gray-300">{example}</span>
+                                            <button
+                                                onClick={() => {
+                                                    const newExamples = [...attributeValue.examples];
+                                                    newExamples.splice(index, 1);
+                                                    onAttributeChange(attributeKey, 'examples', newExamples);
+                                                }}
+                                                className="text-red-400 hover:text-red-300"
+                                            >
+                                                ×
+                                            </button>
                                         </div>
-                                    )}
-                                </>
+                                    ))}
+                                </div>
                             )}
                         </div>
                     )}

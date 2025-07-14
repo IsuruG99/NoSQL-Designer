@@ -35,12 +35,6 @@ export const SchemaProvider = ({ children }) => {
 
     let isValid = true;
     Object.entries(entity.attributes).forEach(([attrName, attrValue]) => {
-      // Check enum fields
-      if (attrValue.subtype === 'enum' && (!attrValue.values || !Array.isArray(attrValue.values))) {
-        console.error(`Enum field ${attrName} is missing values array`);
-        isValid = false;
-      }
-
       // Check required fields
       if (attrValue.required && attrValue.type === undefined) {
         console.error(`Required field ${attrName} is missing type`);

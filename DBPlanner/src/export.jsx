@@ -8,7 +8,6 @@ function generateCQL(collectionName, collectionData, keyspace = "") {
         number: 'double',
         boolean: 'boolean',
         date: 'timestamp',
-        enum: 'text',
         object: null, // handled below
         array: null,  // handled below
         null: 'text'
@@ -69,10 +68,6 @@ function generateCQL(collectionName, collectionData, keyspace = "") {
                 const itemType = typeMap[attr.items.type] || 'text';
                 return `list<${itemType}>`;
             }
-        }
-        // Enum: add comment
-        if (attr.type === "enum" && attr.values) {
-            return `text /* enum: ${attr.values.join(', ')} */`;
         }
         // Null: add comment
         if (attr.type === "null") {
@@ -184,7 +179,6 @@ const ExportComponent = () => {
                         case 'date': exampleValue = new Date().toISOString(); break;
                         case 'array': exampleValue = []; break;
                         case 'object': exampleValue = {}; break;
-                        case 'enum': exampleValue = attr.values[0]; break;
                         default: exampleValue = null;
                     }
                     return [key, exampleValue];

@@ -78,25 +78,22 @@ PROMPT_SCHEMA={
         "StringField": {
           "type": "string",
           "required": True,
-          "validation": { "minLength": 1 }
+          "examples": "Sample text"
         },
         "NumberField": {
           "type": "number",
           "required": False,
-          "validation": { "min": 0 }
+          "examples": 42,
         },
         "BooleanField": {
           "type": "boolean",
-          "required": False
+          "required": False,
+          "example": True
         },
         "DateField": {
           "type": "date",
-          "required": False
-        },
-        "EnumField": {
-          "type": "string",
-          "subtype": "enum",
-          "values": ["a", "b", "c"]
+          "required": False,
+          "examples": "2023-10-01T12:00:00Z"
         },
         "NullField": {
           "type": "null"
@@ -161,29 +158,39 @@ async def generate(data: SchemaRequest):
         "3. Follow the type definitions and nesting style shown in the example.\n"
         "4. If nested objects are used, define subfields properly with types.\n"
         "5. Use plural names for collections where appropriate.\n"
-        "6. Only use valid NoSQL-compatible types (string, number, boolean, object, array, enum, date).\n"
-        "7. If using enum, provide a small example list; do NOT leave enum empty.\n"
-        "8. Avoid 'null' as a standalone type — use optional fields instead.\n"
-        "9. Do not include anything other than the pure JSON object in your output.\n"
+        "6. Only use these exact types: string, number, boolean, object, array, date.\n"
+        "7. For all fields, include an 'examples' array with **exactly 3–5 values**.\n"
+        "8. Avoid 'null' as a standalone type - use optional fields instead.\n"
+        "9. Do NOT use `required` directly on embedded object fields. Only use it inside their properties.\n"
+        "10. Do NOT add fields like 'description' at the collection level unless it appears in the structure.\n"
+        "11. Ensure embedded objects follow the `structure: 'embedded'` pattern.\n"
+        "12. Validate your output format and match the sample reference exactly."
     )
     else:
-        prompt = (
-            f"Generate NoSQL JSON schema collections section exactly matching this structure:\n"
-            f"{json.dumps(PROMPT_SCHEMA['collections'], indent=2)}\n\n"
-            f"Requirements:\n"
-            f"- Description: {data.description}.\n"
-            f"- Known Entities (if any): {data.entities or 'none'}.\n"
-            f"- Known Constraints (if any): {data.constraints or 'none'}.\n\n"
-            "Rules:\n"
-            "1. Maintain exact type definitions and nesting structure as shown in the example.\n"
-            "2. If nested objects are used, define their subfields with types.\n"
-            "3. Use plural names for collections where appropriate.\n"
-            "4. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}').\n"
-            "5. Include only valid attributes based on the data types shown in the example.\n"
-            "6. If using enum, provide a small example list; avoid bare 'enum'.\n"
-            "7. Avoid 'null' as a type unless justified, and give context.\n"
-            "8. Do not use 'null' as a standalone type; use optional fields instead."
-        )
+      prompt = (
+        f"You are given a vague or partial description. Your task is to infer a realistic and structurally sound NoSQL schema.\n\n"
+        f"Use the following reference structure to guide your output:\n"
+        f"{json.dumps(PROMPT_SCHEMA['collections'], indent=2)}\n\n"
+        f"Context:\n"
+        f"- Description: {data.description}\n"
+        f"- Known Entities (if any): {data.entities or 'none'}\n"
+        f"- Known Constraints (if any): {data.constraints or 'none'}\n\n"
+        "Rules:\n"
+        "1. Maintain exact type definitions and nesting as shown in the reference schema.\n"
+        "2. Only use these types: string, number, boolean, object, array, date.\n"
+        "3. For nested objects, define subfields under `properties` and use `structure: 'embedded'`.\n"
+        "4. Never apply `required` to the object field itself — only to its subfields.\n"
+        "5. Use plural, domain-appropriate collection names (e.g., Products, Customers, Orders).\n"
+        "6. Include at least 2–3 collections if the domain suggests multiple entities.\n"
+        "7. Output must be **only** the `collections` section as a valid JSON object (no markdown or commentary).\n"
+        "8. Use `examples` for string, number, and date fields only — limit to **1–2 concise values** per field.\n"
+        "9. Do NOT use `examples` for boolean fields.\n"
+        "10. Do NOT repeat fields from related collections (e.g., product `name` inside order items) — only reference IDs and context-specific fields (e.g., price at purchase).\n"
+        "11. Do NOT place `examples` on entire embedded object fields — only on individual subfields inside `properties`.\n"
+        "12. Do NOT include fields like `description` at the collection level unless shown in the reference.\n"
+        "13. Validate structure before responding. Output must exactly match the shape, nesting, and formatting style of the reference.\n"
+         "14. Format `examples` values always as an array, never as a single string or number.\n"
+    )
 
     try:
         raw_json = await invoke_gemini(prompt)
