@@ -53,27 +53,6 @@ function JsonCard({ entity }) {
         </li>
       );
     }
-    // Enum display
-    if (value.type === "enum" && value.values) {
-      const maxEnum = 3;
-      const shown = value.values.slice(0, maxEnum);
-      const hasMore = value.values.length > maxEnum;
-      return (
-        <li key={key} className="">
-          <strong className="text-cyan-300">{key}:</strong>{" "}
-          <span className="text-gray-300">enum</span>
-          <div className="flex items-start">
-            <span className="text-gray-500 select-none ml-4 mr-2">|</span>
-            <span
-              className="text-gray-400 break-words"
-              style={{ wordBreak: 'break-word' }}
-            >
-              [{shown.join(', ')}{hasMore ? ', ...' : ''}]
-            </span>
-          </div>
-        </li>
-      );
-    }
     // Primitive
     return (
       <li key={key} className="truncate">

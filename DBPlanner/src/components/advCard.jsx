@@ -21,25 +21,6 @@ function AdvCard({ entity, onEdit, dragHandleprops }) {
     const renderAttribute = (key, value) => {
         const isObjectOrArray = value.type === 'object' || value.type === 'array';
         const properties = value.type === 'object' ? value.properties : value.items?.properties;
-        if (value.subtype === "enum" && value.values) {
-            const maxEnum = 3;
-            const shown = value.values.slice(0, maxEnum);
-            const hasMore = value.values.length > maxEnum;
-            return (
-                <li key={key} className="break-words">
-                    <strong className="text-cyan-300">{key}:</strong>
-                    <span className="text-gray-300"> enum</span>
-                    {value.isKey && <KeyIcon className="ml-1 inline h-3 w-3 text-yellow-400" title="Primary Key" />}
-                    {value.required && <ExclamationCircleIcon className="ml-1 inline h-3 w-3 text-red-400" title="Required" />}
-                    <div className="flex items-start mt-1">
-                        <span className="text-gray-500 select-none ml-4 mr-2">|</span>
-                        <span className="text-gray-400" style={{ wordBreak: 'break-word' }}>
-                            [{shown.join(', ')}{hasMore ? `, +${value.values.length - maxEnum} more` : ''}]
-                        </span>
-                    </div>
-                </li>
-            );
-        }
         return (
             <li key={key} className="truncate">
                 <strong className="text-cyan-300">{key}:</strong>

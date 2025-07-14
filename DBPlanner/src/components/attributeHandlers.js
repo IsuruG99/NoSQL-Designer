@@ -6,17 +6,7 @@ export const DATA_TYPES = [
     "date",
     "array",
     "object",
-    "enum", //in reality if this is selected we change to string and subtype to enum
     "null"
-];
-
-export const COMMON_VALIDATION_KEYS = [
-    "pattern",
-    "minLength",
-    "maxLength",
-    "min",
-    "max",
-    "enum"
 ];
 
 export const STORAGE_OPTIONS = [
@@ -26,14 +16,13 @@ export const STORAGE_OPTIONS = [
 
 // Attribute type handlers
 const TYPE_HANDLERS = {
-    string: { getDefault: () => ({ type: "string", required: false, validation: {} }) },
-    number: { getDefault: () => ({ type: "number", required: false, validation: {} }) },
-    boolean: { getDefault: () => ({ type: "boolean", required: false, validation: {} }) },
-    date: { getDefault: () => ({ type: "date", required: false, validation: {} }) },
-    array: { getDefault: () => ({ type: "array", required: false, validation: {}, storage: "embedded", properties: {} }) },
-    object: { getDefault: () => ({ type: "object", required: false, validation: {}, storage: "embedded", properties: {} }) },
-    enum: { getDefault: () => ({ type: "enum", required: false, validation: {}, subtype: "enum", values: [] }) },
-    null: { getDefault: () => ({ type: "null", required: false, validation: {} }) }
+    string: { getDefault: () => ({ type: "string", required: false, examples: [] }) },
+    number: { getDefault: () => ({ type: "number", required: false, examples: [] }) },
+    boolean: { getDefault: () => ({ type: "boolean", required: false, examples: [] }) },
+    date: { getDefault: () => ({ type: "date", required: false, examples: [] }) },
+    array: { getDefault: () => ({ type: "array", required: false, storage: "embedded", properties: {} }) },
+    object: { getDefault: () => ({ type: "object", required: false, storage: "embedded", properties: {} }) },
+    null: { getDefault: () => ({ type: "null", required: false }) }
 };
 
 // Removes unnecessary keys based on the type of attribute
@@ -46,13 +35,12 @@ const trimAttribute = (attribute) => {
         delete attribute.isKey;
     }
     const allowedKeysByType = {
-        string: ["type", "required", "validation", "isKey", "default"],
-        number: ["type", "required", "validation", "isKey", "default"],
-        boolean: ["type", "required", "validation", "isKey", "default"],
-        date: ["type", "required", "validation", "isKey", "default"],
-        enum: ["type", "required", "subtype", "values", "validation", "isKey", "default"],
-        array: ["type", "required", "structure", "items", "validation", "default"],
-        object: ["type", "required", "structure", "properties", "validation", "default"],
+        string: ["type", "required", "isKey", "default", "examples"],
+        number: ["type", "required", "isKey", "default", "examples"],
+        boolean: ["type", "required", "isKey", "default", "examples"],
+        date: ["type", "required", "isKey", "default", "examples"],
+        array: ["type", "required", "structure", "items", "default"],
+        object: ["type", "required", "structure", "properties", "default"],
         null: ["type", "required"]
     };
 
@@ -74,16 +62,14 @@ export const normalizeAttribute = (attribute) => {
 
     // Shared defaults
     if (attribute.required === undefined) attribute.required = false;
-    if (!attribute.validation) attribute.validation = {};
+    if (attribute.examples === undefined && ["string", "number", "boolean", "date"].includes(attribute.type)) {
+        attribute.examples = [];
+    }
 
     switch (attribute.type) {
-        case "enum":
-            if (!attribute.subtype) attribute.subtype = "enum";
-            if (!Array.isArray(attribute.values)) attribute.values = [];
-            break;
         case "array":
             if (!attribute.structure) attribute.structure = "embedded";
-            if (!attribute.items) attribute.items = { type: "string" };
+            if (!attribute.items) attribute.items = { type: "string", required: false, examples: [] };
             break;
         case "object":
             if (!attribute.structure) attribute.structure = "embedded";
@@ -130,6 +116,9 @@ export const createAttribute = (type, isNested = false) => {
     const attribute = getTypeHandler(type).getDefault();
     if (isNested && (type === 'object' || type === 'array')) {
         attribute.properties = {};
+        if(type === 'array' && !attribute.items) {
+            attribute.items = { type: "string", required: false, examples: [] };
+        }
     }
     return attribute;
 };
@@ -181,13 +170,6 @@ export const updateAttribute = (currentAttributes, keyPath, field, value) => {
                 return updatedAttributes;
             }
         }
-    } else if (field === 'validation') {
-        if (!current[finalKey].validation) current[finalKey].validation = {};
-        current[finalKey].validation[value.key] = value.value;
-        current[finalKey] = normalizeAttribute(current[finalKey]);
-    } else if (field === 'deleteValidation') {
-        if (current[finalKey].validation) delete current[finalKey].validation[value];
-        current[finalKey] = normalizeAttribute(current[finalKey]);
     } else if (field === 'delete') {
         delete current[finalKey];
     } else {
