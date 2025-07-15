@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
-import { SchemaContext } from '../SchemaContext';
-import { KeyIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
-import './customScrollbar.css';
+import { SchemaContext } from '../../context/SchemaContext';
+import { KeyIcon, ExclamationCircleIcon,  PencilIcon } from '@heroicons/react/24/solid';
+import '../../css/customScrollbar.css';
 
 function AdvCard({ entity, onEdit, dragHandleprops }) {
     const { setSelectedEntity, setOriginalSelectedEntity, setTempSelectedEntity } = useContext(SchemaContext);
@@ -43,7 +43,7 @@ function AdvCard({ entity, onEdit, dragHandleprops }) {
     };
 
     return (
-        <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] max-h-[300px] max-w-[200px] border border-gray-700 overflow-auto overflow-x-auto custom-scrollbar">
+        <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg w-[220px] h-[300px] overflow-y-auto border border-gray-700 custom-scrollbar">
             <div className="flex justify-between items-center mb-2">
                 <h3
                     className="text-lg font-bold text-cyan-400 cursor-move"
@@ -57,16 +57,15 @@ function AdvCard({ entity, onEdit, dragHandleprops }) {
                     className="w-7 h-7 flex items-center justify-center bg-blue-600 rounded shadow hover:bg-blue-700 transition"
                     title="Edit"
                     style={{ minWidth: 0, minHeight: 0, padding: 0 }}
-                >   
-                    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" className="text-white">
-                        <path d="M4 13.5V16h2.5l7.06-7.06-2.5-2.5L4 13.5z" fill="currentColor" />
-                        <path d="M14.85 6.15a1 1 0 0 0 0-1.41l-1.59-1.59a1 1 0 0 0-1.41 0l-1.13 1.13 2.5 2.5 1.13-1.13z" fill="currentColor" />
-                    </svg>
+                >
+                    <PencilIcon className="h-4 w-4 text-white" />
                 </button>
             </div>
 
             <hr className="border-gray-600 mb-2" />
-            <p className="text-gray-400 text-sm mb-2">{entity.description || 'No description'}</p>
+            {entity.description && (
+                <p className="text-gray-400 text-sm mb-2">{entity.description}</p>
+            )}
             <ul className="text-sm space-y-1">
                 {Object.entries(entity.attributes).map(([key, value]) => renderAttribute(key, value))}
             </ul>

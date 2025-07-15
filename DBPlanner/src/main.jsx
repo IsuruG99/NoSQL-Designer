@@ -1,12 +1,12 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
-import './index.css';
+import './css/index.css';
 
-import Generate from './generate.jsx';
-import Editor from './editor.jsx';
-import Export from './export.jsx'; // Assuming you have an Export component
-import { SchemaProvider } from './SchemaContext.jsx';
+import Generate from './generatePage.jsx';
+import Editor from './editorPage.jsx';
+import Export from './exportPage.jsx'; // Assuming you have an Export component
+import { SchemaProvider } from './context/SchemaContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

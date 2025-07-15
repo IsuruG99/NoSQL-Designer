@@ -1,239 +1,16 @@
-import React, { useContext, useState, useEffect } from 'react';
-import { SchemaContext } from '../SchemaContext';
-import './customScrollbar.css';
-import {
-    DATA_TYPES,
-    STORAGE_OPTIONS,
-    // COMMON_VALIDATION_KEYS,
-    getTypeHandler,
-    createAttribute,
-    updateAttribute
-} from './attributeHandlers';
+import React, { useState, useEffect } from 'react';
+import { DATA_TYPES, STORAGE_OPTIONS } from './attributeHandlers';
 
-function EditableCard({ handleCloseModal, isNewCard = false }) {
-    const {
-        schema,
-        setSchema,
-        tempSelectedEntity,
-        setTempSelectedEntity,
-        originalSelectedEntity,
-        setOriginalSelectedEntity,
-        setSelectedEntity
-    } = useContext(SchemaContext);
-
-    const { entities, setEntities } = useContext(SchemaContext);
-    const [entityName, setEntityName] = useState(isNewCard ? "" : tempSelectedEntity?.name || "");
-    const [entityDescription, setEntityDescription] = useState(isNewCard ? "" : tempSelectedEntity?.description || "");
-    const [tempKeys, setTempKeys] = useState(Object.keys(tempSelectedEntity?.attributes || {}));
-
-    useEffect(() => {
-        if (!isNewCard && tempSelectedEntity) {
-            setEntityName(tempSelectedEntity.name || "");
-            setEntityDescription(tempSelectedEntity.description || "");
-            setTempKeys(Object.keys(tempSelectedEntity.attributes || {}));
-        }
-    }, [tempSelectedEntity, isNewCard]);
-
-    const handleNameChange = (e) => {
-        const newName = e.target.value;
-        setEntityName(newName);
-        setTempSelectedEntity({ ...tempSelectedEntity, name: newName });
-    };
-
-    const handleDescriptionChange = (e) => {
-        const newDescription = e.target.value;
-        setEntityDescription(newDescription);
-        setTempSelectedEntity({ ...tempSelectedEntity, description: newDescription });
-    };
-
-    const updateAttributes = (updatedAttributes) => {
-        setTempSelectedEntity({ ...tempSelectedEntity, attributes: updatedAttributes });
-        setTempKeys(Object.keys(updatedAttributes));
-    };
-
-    const handleAttributeChange = (keyPath, field, value) => {
-        const updatedAttributes = updateAttribute(
-            tempSelectedEntity?.attributes || {},
-            keyPath,
-            field,
-            value
-        );
-        updateAttributes(updatedAttributes);
-
-        if (field === 'rename') {
-            setTempKeys(Object.keys(updatedAttributes));
-        }
-    };
-
-    const handleAddAttribute = () => {
-        const newKey = `newAttribute${tempKeys.length + 1}`;
-        const updatedAttributes = {
-            ...(tempSelectedEntity?.attributes || {}),
-            [newKey]: createAttribute("string")
-        };
-        updateAttributes(updatedAttributes);
-    };
-
-    const handleDelete = () => {
-        if (!originalSelectedEntity?.name) return;
-        if (!window.confirm(`Are you sure you want to delete "${originalSelectedEntity.name}"? This cannot be undone.`)) return;
-
-        // Remove the entity from entities array
-        const updatedEntities = entities.filter(e => e.name !== originalSelectedEntity.name);
-        setEntities(updatedEntities);
-
-        setOriginalSelectedEntity(null);
-        setTempSelectedEntity(null);
-        setSelectedEntity(null);
-        handleCloseModal();
-    };
-
-    const handleSave = () => {
-        try {
-            if (!entityName.trim()) throw new Error("Collection name cannot be blank.");
-            if (!tempSelectedEntity?.attributes || Object.keys(tempSelectedEntity.attributes).length === 0) {
-                throw new Error("Collection must have at least one attribute.");
-            }
-
-            let updatedEntities;
-            if (isNewCard) {
-                // Add new entity
-                updatedEntities = [
-                    ...entities,
-                    {
-                        name: entityName,
-                        description: entityDescription,
-                        attributes: tempSelectedEntity.attributes
-                    }
-                ];
-            } else {
-                // Edit existing entity
-                updatedEntities = entities.map(e =>
-                    e.name === originalSelectedEntity.name
-                        ? { ...e, name: entityName, description: entityDescription, attributes: tempSelectedEntity.attributes }
-                        : e
-                );
-            }
-
-            setEntities(updatedEntities);
-
-            setOriginalSelectedEntity(null);
-            setTempSelectedEntity(null);
-            setSelectedEntity(null);
-            handleCloseModal();
-        } catch (error) {
-            alert(error.message);
-        }
-    };
-    return (
-        <div className="w-full h-full flex flex-col bg-gray-800 rounded-lg shadow-lg">
-            {/* Header Section */}
-            <div className="p-4">
-                <div className="mb-2">
-                    <label className="block text-gray-400 text-sm mb-1">Collection Name</label>
-                    <input
-                        type="text"
-                        value={entityName}
-                        onChange={handleNameChange}
-                        className="text-xl px-2 font-bold bg-gray-700 text-white p-1 rounded w-full"
-                    />
-                </div>
-
-                <div className="mb-2">
-                    <label className="block text-gray-400 text-sm mb-1">Description</label>
-                    <input
-                        type="text"
-                        value={entityDescription}
-                        onChange={handleDescriptionChange}
-                        className="bg-gray-700 px-2 text-white p-1 rounded w-full"
-                    />
-                </div>
-            </div>
-
-            <hr className="border-gray-600" />
-
-            {/* Attributes Section */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[50vh] p-4">
-                <h3 className="text-lg font-bold text-cyan-400 mb-2">Attributes</h3>
-
-                <ul className="space-y-2">
-                    {tempKeys.map((key) => (
-                        <AttributeEditor
-                            key={key}
-                            attributeKey={key}
-                            attributeValue={tempSelectedEntity?.attributes[key]}
-                            onAttributeChange={handleAttributeChange}
-                            isNested={false}
-                        />
-                    ))}
-                </ul>
-
-                <button
-                    onClick={handleAddAttribute}
-                    className="text-white hover:text-cyan-400 text-xl mt-2 flex items-center w-full justify-center py-2 border border-dashed border-gray-600 rounded-lg"
-                >
-                    + Add Attribute
-                </button>
-            </div>
-
-            <hr className="border-gray-600" />
-            <div className="p-4 flex justify-between items-center">
-                {/* Left: Delete Collection (only show if not new card) */}
-                {!isNewCard ? (
-                    <button
-                        onClick={handleDelete}
-                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-800 border-red-500 border-b-3"
-                    >
-                        Delete Collection
-                    </button>
-                ) : <div />}
-
-                {/* Right: Cancel/Save */}
-                <div className="flex space-x-2">
-                    <button
-                        onClick={handleCloseModal}
-                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-700 border-red-500 border-b-3"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSave}
-                        className="px-4 py-2 text-white rounded bg-green-800 hover:bg-green-700 border-green-500 border-b-3"
-                    >
-                        {isNewCard ? 'Create' : 'Update'}
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function AttributeEditor({
-    attributeKey,
-    attributeValue,
-    onAttributeChange,
-    isNested
+export function AttributeEditor({
+    attributeKey, attributeValue, onAttributeChange, isNested
 }) {
     const [keyName, setKeyName] = useState(attributeKey);
     const [exampleInput, setExampleInput] = useState("");
-    // const [validationKey, setValidationKey] = useState("");
-    // const [customKey, setCustomKey] = useState("");
-    // const [useCustomKey, setUseCustomKey] = useState(false);
-    // const [validationValue, setValidationValue] = useState("");
     const [isExpanded, setIsExpanded] = useState(false);
-    // const [isValidationExpanded, setIsValidationExpanded] = useState(false);
 
     useEffect(() => {
         setKeyName(attributeKey);
     }, [attributeKey]);
-
-    // const handleValidationAdd = () => {
-    //     if (validationKey && validationValue) {
-    //         onAttributeChange(attributeKey, 'validation', { key: validationKey, value: validationValue });
-    //         setValidationKey("");
-    //         setValidationValue("");
-    //     }
-    // };
 
     const handleKeyRename = () => {
         if (keyName !== attributeKey && keyName.trim() !== "") {
@@ -248,8 +25,7 @@ function AttributeEditor({
         }
     };
 
-    const getAvailableTypes = () =>
-        isNested ? DATA_TYPES.filter(type => !['object', 'array', 'null'].includes(type)) : DATA_TYPES;
+    const getAvailableTypes = () => isNested ? DATA_TYPES.filter(type => !['object', 'array', 'null'].includes(type)) : DATA_TYPES;
 
     const Wrapper = isNested ? 'div' : 'li';
 
@@ -265,9 +41,6 @@ function AttributeEditor({
                             {attributeValue.isKey && <span className="ml-2 text-yellow-400">• Key</span>}
                             {attributeValue.required && <span className="ml-2 text-red-400">• Required</span>}
                         </div>
-                        {/* <span className="text-gray-400 text-lg font-mono">
-                        {isExpanded ? 'Collapse' : 'Expand'}
-                    </span> */}
                     </div>
                 </div>
 
@@ -281,8 +54,7 @@ function AttributeEditor({
                                 value={keyName}
                                 onChange={e => setKeyName(e.target.value)}
                                 onBlur={handleKeyRename}
-                                className="bg-gray-800 px-2 text-white p-1 rounded w-full"
-                            />
+                                className="bg-gray-800 px-2 text-white p-1 rounded w-full" />
                         </div>
 
                         <div>
@@ -308,8 +80,7 @@ function AttributeEditor({
                                 id={`required-${attributeKey}`}
                                 checked={attributeValue.required || false}
                                 onChange={e => onAttributeChange(attributeKey, 'required', e.target.checked)}
-                                className="mr-2"
-                            />
+                                className="mr-2" />
                             <label htmlFor={`required-${attributeKey}`} className="text-gray-400 text-sm">Required</label>
                         </div>
                         <div className="col-span-2 flex items-center">
@@ -318,8 +89,7 @@ function AttributeEditor({
                                 id={`isKey-${attributeKey}`}
                                 checked={attributeValue.isKey || false}
                                 onChange={e => onAttributeChange(attributeKey, 'isKey', e.target.checked)}
-                                className="mr-2"
-                            />
+                                className="mr-2" />
                             <label htmlFor={`isKey-${attributeKey}`} className="text-gray-400 text-sm">isKey</label>
                         </div>
                         {['array', 'object'].includes(attributeValue.type) && !isNested && (
@@ -354,8 +124,7 @@ function AttributeEditor({
                                             setExampleInput('');
                                         }
                                     }}
-                                    className="bg-gray-800 px-2 text-white p-1 rounded flex-1 mr-2"
-                                />
+                                    className="bg-gray-800 px-2 text-white p-1 rounded flex-1 mr-2" />
                                 <button
                                     onClick={() => {
                                         if (exampleInput.trim()) {
@@ -410,11 +179,8 @@ function AttributeEditor({
                                             key={subKey}
                                             attributeKey={subKey}
                                             attributeValue={subValue}
-                                            onAttributeChange={(key, field, value) =>
-                                                onAttributeChange(`${attributeKey}.properties.${key}`, field, value)
-                                            }
-                                            isNested={true}
-                                        />
+                                            onAttributeChange={(key, field, value) => onAttributeChange(`${attributeKey}.properties.${key}`, field, value)}
+                                            isNested={true} />
                                     ))}
                                 </div>
                             ) : (
@@ -431,11 +197,8 @@ function AttributeEditor({
                                 <AttributeEditor
                                     attributeKey="items"
                                     attributeValue={attributeValue.items}
-                                    onAttributeChange={(key, field, value) =>
-                                        onAttributeChange(`${attributeKey}.items${key !== "items" ? `.${key}` : ""}`, field, value)
-                                    }
-                                    isNested={true}
-                                />
+                                    onAttributeChange={(key, field, value) => onAttributeChange(`${attributeKey}.items${key !== "items" ? `.${key}` : ""}`, field, value)}
+                                    isNested={true} />
                             ) : (
                                 <button
                                     onClick={() => onAttributeChange(`${attributeKey}.items`, 'type', 'string')}
@@ -464,5 +227,3 @@ function AttributeEditor({
         </Wrapper>
     );
 }
-
-export default EditableCard;

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
-import AdvCardGrid from './components/AdvCardGrid.jsx';
-import { SchemaContext } from './SchemaContext';
+import AdvCardGrid from '../cards/AdvCardGrid.jsx';
+import { SchemaContext } from '../../context/SchemaContext.jsx';
 
 function AdvPanel({ loading, elapsedTime, onEdit, onAdd }) {
   const { entities } = useContext(SchemaContext);
@@ -14,13 +14,14 @@ function AdvPanel({ loading, elapsedTime, onEdit, onAdd }) {
         <>
           {entities.length > 0 ? (
             <div className="panel__output w-full">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 place-items-center items-fit w-full">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 w-full auto-rows-min">
+
                 {/* AdvCardGrid renders only the cards */}
                 <AdvCardGrid entities={entities} onEdit={onEdit} />
                 {/* Add Card button as a grid item */}
                 <div
                   onClick={onAdd}
-                  className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg min-w-[220px] min-h-[300px] max-h-[300px] max-w-[200px] border border-dotted border-cyan-400 flex flex-col items-center justify-center cursor-pointer transition hover:bg-gray-700"
+                  className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg w-[220px] h-[300px] border border-dotted border-cyan-400 flex flex-col items-center justify-center cursor-pointer transition hover:bg-gray-700"
                   style={{ userSelect: 'none' }}
                   title="Add new card"
                 >

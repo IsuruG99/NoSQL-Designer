@@ -65,7 +65,7 @@ class SchemaRequest(BaseModel):
 TOP_SCHEMA_SEGMENT = {
     "$schema": "http://json-schema.org/draft-07/schema#",
   "$meta": {
-    "version": "1.0",
+    "version": "1.4",
     "description": "Universal NoSQL Schema for Generate + Edit Phases"
   }
 }
@@ -87,8 +87,7 @@ PROMPT_SCHEMA={
         },
         "BooleanField": {
           "type": "boolean",
-          "required": False,
-          "example": True
+          "required": False
         },
         "DateField": {
           "type": "date",
@@ -125,7 +124,7 @@ BOTTOM_SCHEMA_SEGMENT = {
     "mongodb": {
       "indexes": [
         { 
-          "collection": "Orders", 
+          "collection": "Col1", 
           "fields": { "Status": 1 }, 
           "options": { "unique": False } 
         }
@@ -133,10 +132,10 @@ BOTTOM_SCHEMA_SEGMENT = {
     },
     "cassandra": {
       "compaction": { "class": "SizeTieredCompactionStrategy" },
-      "clusteringOrder": { "Orders": { "OrderTime": "DESC" } }
+      "clusteringOrder": { "Col1": "ASC" },
     },
     "firebase": {
-      "collectionGroups": ["Orders"]
+      "collectionGroups": ["Col1"]
     }
   }
 }

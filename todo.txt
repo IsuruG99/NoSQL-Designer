@@ -1,7 +1,6 @@
 TODOLIST
 
 TODO (Main Points)
-- Connect Evnum Values from Entity to Validation Rules
 
 Backend Functionality
 1. Chutes Connectivity (DS V3 5024)
@@ -31,5 +30,7 @@ Card Editor Ideas
 
 Last change
 - Cassandra Import
-- Refined enum visibility in Entities.
+- Replaced Enums with String examples.
+- Stress Tested Prompts with drastically low single sentence descriptions.
+
 

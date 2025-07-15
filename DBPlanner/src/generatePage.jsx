@@ -1,7 +1,7 @@
 import { useState, useContext, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { SchemaContext } from "./SchemaContext.jsx";
-import Panel from "./basicPanel.jsx";
+import { SchemaContext } from "./context/SchemaContext.jsx";
+import Panel from "./components/layout/basicPanel.jsx";
 
 function Generate() {
   const [formData, setFormData] = useState({

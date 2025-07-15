@@ -1,6 +1,6 @@
 import React, { useContext, useState } from 'react';
-import { SchemaContext } from './SchemaContext.jsx';
-import './index.css'; // Ensure you have a CSS file for basic styles
+import { SchemaContext } from './context/SchemaContext.jsx';
+import './css/index.css'; // Ensure you have a CSS file for basic styles
 
 function generateCQL(collectionName, collectionData, keyspace = "") {
     const typeMap = {

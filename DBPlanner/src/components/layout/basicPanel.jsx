@@ -1,5 +1,5 @@
 import React from 'react';
-import JsonCard from './components/basicCard.jsx';
+import JsonCard from '../cards/basicCard.jsx';
 
 function Panel({ schema, loading, elapsedTime }) {
     const collections = schema?.collections || null;
