@@ -1,6 +1,7 @@
 import asyncio
 import re
 import os
+from typing import Optional
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
@@ -12,7 +13,7 @@ if not API_KEY:
 
 client = genai.Client(api_key=API_KEY)
 
-async def invoke_gemini(prompt: str) -> str:
+async def invoke_gemini(prompt: str) -> Optional[str]:
     """Execute LLM call using Gemini API"""
     max_retries = 3
     for attempt in range(1, max_retries + 1):
