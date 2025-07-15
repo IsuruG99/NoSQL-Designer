@@ -143,15 +143,15 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                     />
                 </div>
                 {entityDescription && (
-                <div className="mb-2">
-                    <label className="block text-gray-400 text-sm mb-1">Description</label>
-                    <input
-                        type="text"
-                        value={entityDescription}
-                        onChange={handleDescriptionChange}
-                        className="bg-gray-700 px-2 text-white p-1 rounded w-full"
-                    />
-                </div>
+                    <div className="mb-2">
+                        <label className="block text-gray-400 text-sm mb-1">Description</label>
+                        <input
+                            type="text"
+                            value={entityDescription}
+                            onChange={handleDescriptionChange}
+                            className="bg-gray-700 px-2 text-white p-1 rounded w-full"
+                        />
+                    </div>
                 )}
             </div>
 
@@ -190,19 +190,19 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-800 border-red-500 border-b-3"
                         title="Delete Collection"
                     >
-                        <TrashIcon  className="h-5 w-5 inline mr-1" />
+                        <TrashIcon className="h-5 w-5 inline mr-1" />
                     </button>
                 ) : <div />}
 
                 {/* Right: Cancel/Save */}
                 <div className="flex space-x-2">
                     <button
-    onClick={handleCloseModal}
-    className="px-4 py-2 text-white rounded bg-gray-600 hover:bg-gray-700 border-gray-500 border-b-3"
-    title="Cancel"
->
-    Cancel
-</button>
+                        onClick={handleCloseModal}
+                        className="px-4 py-2 text-white rounded bg-gray-600 hover:bg-gray-700 border-gray-500 border-b-3"
+                        title="Cancel"
+                    >
+                        Cancel
+                    </button>
                     <button
                         onClick={handleSave}
                         className="px-4 py-2 text-white rounded bg-green-800 hover:bg-green-700 border-green-500 border-b-3"
