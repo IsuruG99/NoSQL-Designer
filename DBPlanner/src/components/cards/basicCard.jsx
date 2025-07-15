@@ -1,7 +1,6 @@
 import React from 'react';
 import { KeyIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
-import './customScrollbar.css';
-
+import '../../css/customScrollbar.css';
 
 function JsonCard({ entity }) {
   if (!entity || !entity.attributes) {

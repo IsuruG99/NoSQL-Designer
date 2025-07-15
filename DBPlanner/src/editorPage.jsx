@@ -1,8 +1,8 @@
 import React, { useContext, useState } from 'react';
-import { SchemaContext } from './SchemaContext.jsx';
-import AdvPanel from './advPanel.jsx';
-import EditableCard from './components/editCard.jsx';
-import Modal from './components/Modal.jsx';
+import { SchemaContext } from './context/SchemaContext.jsx';
+import AdvPanel from './components/layout/advPanel.jsx';
+import EditableCard from './components/cards/editCard.jsx';
+import Modal from './components/layout/Modal.jsx';
 
 const Editor = () => {
     const { schema, selectedEntity, setOriginalSelectedEntity, setTempSelectedEntity } = useContext(SchemaContext);

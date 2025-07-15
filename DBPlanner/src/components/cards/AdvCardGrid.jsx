@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { DndContext, closestCenter } from '@dnd-kit/core';
 import { arrayMove, SortableContext, useSortable, rectSortingStrategy } from '@dnd-kit/sortable';
 import AdvCard from './advCard';
-import { SchemaContext } from '../SchemaContext';
+import { SchemaContext } from '../../context/SchemaContext';
 
 function SortableAdvCard({ entity, onEdit, id }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
