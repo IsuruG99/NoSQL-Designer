@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { DATA_TYPES, STORAGE_OPTIONS } from './attributeHandlers';
 
+/**
+ * AttributeEditor renders a single attribute's editing interface.
+ * Handles types, required/key flags, sub-attributes (for objects/arrays), and example values.
+ *
+ * @param {Object} props
+ * @param {string} props.attributeKey - The current attribute key name.
+ * @param {Object} props.attributeValue - The attribute's definition object.
+ * @param {Function} props.onAttributeChange - Callback to notify parent of changes.
+ * @param {boolean} props.isNested - Whether the attribute is a nested child (limits options).
+ */
 export function AttributeEditor({
     attributeKey, attributeValue, onAttributeChange, isNested
 }) {

@@ -1,7 +1,20 @@
 import { createContext, useState, useEffect, useCallback } from 'react';
 
+/**
+ * React Context for managing schema and entities.
+ * Provides current schema, entities list, selected entity state,
+ * and setters for all of them.
+ */
 export const SchemaContext = createContext();
 
+/**
+ * Provider component for SchemaContext.
+ * Initializes schema state from localStorage and keeps it in sync.
+ * Handles validation of entities and schema.
+ *
+ * @param {object} props
+ * @param {React.ReactNode} props.children - Child components
+ */
 export const SchemaProvider = ({ children }) => {
   const [schema, setSchema] = useState(() => {
     try {

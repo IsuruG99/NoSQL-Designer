@@ -3,6 +3,16 @@ import AdvCardGrid from '../cards/AdvCardGrid.jsx';
 import { SchemaContext } from '../../context/SchemaContext.jsx';
 import { PlusIcon } from '@heroicons/react/24/solid';
 
+/**
+ * AdvPanel component - displays the drawing panel with schema cards.
+ * Uses entities from SchemaContext to render cards grid.
+ * 
+ * Props:
+ * @param {boolean} loading - Indicates if backend response is pending.
+ * @param {number} elapsedTime - Seconds elapsed waiting for backend.
+ * @param {function} onEdit - Callback when a card is edited.
+ * @param {function} onAdd - Callback when "Add Card" is clicked.
+ */
 function AdvPanel({ loading, elapsedTime, onEdit, onAdd }) {
   const { entities } = useContext(SchemaContext);
 

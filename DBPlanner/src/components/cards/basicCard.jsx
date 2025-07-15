@@ -2,6 +2,12 @@ import React from 'react';
 import { KeyIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import '../../css/customScrollbar.css';
 
+/**
+ * JsonCard - renders a collection with nested attributes.
+ * Shows keys, required flags, types, and nested objects/arrays.
+ * 
+ * @param entity - collection object with attributes to display
+ */
 function JsonCard({ entity }) {
   if (!entity || !entity.attributes) {
     console.error("Invalid collection format:", entity);

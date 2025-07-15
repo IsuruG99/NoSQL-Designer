@@ -4,9 +4,16 @@ import { arrayMove, SortableContext, useSortable, rectSortingStrategy } from '@d
 import AdvCard from './advCard';
 import { SchemaContext } from '../../context/SchemaContext';
 
+/**
+ * SortableAdvCard wraps AdvCard to provide drag-and-drop support using @dnd-kit.
+ *
+ * @param {object} props
+ * @param {object} props.entity - Entity data to render.
+ * @param {function} props.onEdit - Callback when editing is triggered.
+ * @param {string} props.id - Unique id for dnd context.
+ */
 function SortableAdvCard({ entity, onEdit, id }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
-
     return (
         <div
             ref={setNodeRef}
@@ -15,15 +22,19 @@ function SortableAdvCard({ entity, onEdit, id }) {
                 transition,
                 opacity: isDragging ? 0.7 : 1,
             }}
-            className="relative"
-        >
-            
-            <AdvCard entity={entity} onEdit={onEdit} dragHandleprops={{...attributes, ...listeners }}
-            />
+            className="relative">
+            <AdvCard entity={entity} onEdit={onEdit} dragHandleprops={{...attributes, ...listeners }}/>
         </div>
     );
 }
 
+/**
+ * AdvCardGrid renders a sortable grid of entities using @dnd-kit sortable context.
+ *
+ * @param {object} props
+ * @param {Array} props.entities - List of entities to display.
+ * @param {function} props.onEdit - Callback passed down to cards.
+ */
 function AdvCardGrid({ entities, onEdit }) {
     const { setEntities } = useContext(SchemaContext);
 
@@ -41,15 +52,13 @@ function AdvCardGrid({ entities, onEdit }) {
         <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext
                 items={entities.map(e => e.name)}
-                strategy={rectSortingStrategy}
-            >
+                strategy={rectSortingStrategy}>
                 {entities.map(entity => (
                     <SortableAdvCard
                         key={entity.name}
                         id={entity.name}
                         entity={entity}
-                        onEdit={onEdit}
-                    />
+                        onEdit={onEdit}/>
                 ))}
             </SortableContext>
         </DndContext>

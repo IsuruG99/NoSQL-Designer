@@ -67,7 +67,7 @@ function Generate() {
         console.log("Received schema:", data.schema);
         setSchema(data.schema);
 
-        // --- FIX: Convert collections to entities array if needed ---
+        // Set entities based on the schema format
         if (data.schema.collections && typeof data.schema.collections === "object") {
           const entitiesArr = Object.values(data.schema.collections);
           setEntities(entitiesArr);

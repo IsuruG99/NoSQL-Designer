@@ -1,6 +1,13 @@
 import React from 'react';
 import JsonCard from '../cards/basicCard.jsx';
 
+/**
+ * Basic Panel component - renders a grid of JSON cards based on the schema.
+ * 
+ * @param schema - object containing collections to display
+ * @param loading - boolean indicating if data is loading
+ * @param elapsedTime - seconds elapsed during loading
+ */
 function Panel({ schema, loading, elapsedTime }) {
     const collections = schema?.collections || null;
 

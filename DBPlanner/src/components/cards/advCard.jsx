@@ -3,6 +3,14 @@ import { SchemaContext } from '../../context/SchemaContext';
 import { KeyIcon, ExclamationCircleIcon,  PencilIcon } from '@heroicons/react/24/solid';
 import '../../css/customScrollbar.css';
 
+/**
+ * AdvCard - displays an entity card with attributes and edit option.
+ * Supports nested object/array attributes and drag handle for reordering.
+ * 
+ * @param entity - the entity object with name, description, attributes
+ * @param onEdit - callback to trigger edit modal
+ * @param dragHandleprops - props for drag handle (optional) (react-dnd)
+ */
 function AdvCard({ entity, onEdit, dragHandleprops }) {
     const { setSelectedEntity, setOriginalSelectedEntity, setTempSelectedEntity } = useContext(SchemaContext);
 
@@ -48,16 +56,14 @@ function AdvCard({ entity, onEdit, dragHandleprops }) {
                 <h3
                     className="text-lg font-bold text-cyan-400 cursor-move"
                     {...(dragHandleprops || {})}
-                    title="Drag to reorder"
-                >
+                    title="Drag to reorder">
                     {entity.name}
                 </h3>
                 <button
                     onClick={handleEditClick}
                     className="w-7 h-7 flex items-center justify-center bg-blue-600 rounded shadow hover:bg-blue-700 transition"
                     title="Edit"
-                    style={{ minWidth: 0, minHeight: 0, padding: 0 }}
-                >
+                    style={{ minWidth: 0, minHeight: 0, padding: 0 }}>
                     <PencilIcon className="h-4 w-4 text-white" />
                 </button>
             </div>

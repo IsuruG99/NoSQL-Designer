@@ -9,6 +9,13 @@ import {
 import { AttributeEditor } from '../AttributeEditor';
 import { TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
+/**
+ * EditableCard allows creating or editing a schema entity (collection).
+ * 
+ * @param {object} props
+ * @param {function} props.handleCloseModal - Function to close the modal.
+ * @param {boolean} [props.isNewCard=false] - Flag indicating if this is a new entity.
+ */
 function EditableCard({ handleCloseModal, isNewCard = false }) {
     const {
         schema,
@@ -120,7 +127,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             }
 
             setEntities(updatedEntities);
-
             setOriginalSelectedEntity(null);
             setTempSelectedEntity(null);
             setSelectedEntity(null);
@@ -139,8 +145,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         type="text"
                         value={entityName}
                         onChange={handleNameChange}
-                        className="text-xl px-2 font-bold bg-gray-700 text-white p-1 rounded w-full"
-                    />
+                        className="text-xl px-2 font-bold bg-gray-700 text-white p-1 rounded w-full"/>
                 </div>
                 {entityDescription && (
                     <div className="mb-2">
@@ -149,8 +154,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                             type="text"
                             value={entityDescription}
                             onChange={handleDescriptionChange}
-                            className="bg-gray-700 px-2 text-white p-1 rounded w-full"
-                        />
+                            className="bg-gray-700 px-2 text-white p-1 rounded w-full"/>
                     </div>
                 )}
             </div>
@@ -168,15 +172,14 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                             attributeKey={key}
                             attributeValue={tempSelectedEntity?.attributes[key]}
                             onAttributeChange={handleAttributeChange}
-                            isNested={false}
-                        />
+                            isNested={false}/>
                     ))}
                 </ul>
 
                 <button
                     onClick={handleAddAttribute}
-                    className="text-white hover:text-cyan-400 text-xl mt-2 flex items-center w-full justify-center py-2 border border-dashed border-gray-600 rounded-lg"
-                >
+                    className="text-white hover:text-cyan-400 text-xl mt-2 flex items-center w-full 
+                    justify-center py-2 border border-dashed border-gray-600 rounded-lg">
                     + Add Attribute
                 </button>
             </div>
@@ -187,9 +190,9 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                 {!isNewCard ? (
                     <button
                         onClick={handleDelete}
-                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-800 border-red-500 border-b-3"
-                        title="Delete Collection"
-                    >
+                        className="px-4 py-2 text-white rounded bg-red-800 hover:bg-red-800 
+                        border-red-500 border-b-3"
+                        title="Delete Collection">
                         <TrashIcon className="h-5 w-5 inline mr-1" />
                     </button>
                 ) : <div />}
@@ -198,16 +201,16 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                 <div className="flex space-x-2">
                     <button
                         onClick={handleCloseModal}
-                        className="px-4 py-2 text-white rounded bg-gray-600 hover:bg-gray-700 border-gray-500 border-b-3"
-                        title="Cancel"
-                    >
+                        className="px-4 py-2 text-white rounded bg-gray-600 hover:bg-gray-700 
+                        border-gray-500 border-b-3"
+                        title="Cancel">
                         Cancel
                     </button>
                     <button
                         onClick={handleSave}
-                        className="px-4 py-2 text-white rounded bg-green-800 hover:bg-green-700 border-green-500 border-b-3"
-                        title={isNewCard ? "Create Collection" : "Update Collection"}
-                    >
+                        className="px-4 py-2 text-white rounded bg-green-800 hover:bg-green-700 
+                        border-green-500 border-b-3"
+                        title={isNewCard ? "Create Collection" : "Update Collection"}>
                         {isNewCard ? 'Create' : 'Update'}
                     </button>
                 </div>

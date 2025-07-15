@@ -1,4 +1,7 @@
-// Data type constants
+/**
+ * List of supported attribute data types.
+ * @constant {string[]}
+ */
 export const DATA_TYPES = [
     "string",
     "number",
@@ -9,12 +12,20 @@ export const DATA_TYPES = [
     "null"
 ];
 
+/**
+ * Storage options for complex attributes.
+ * @constant {string[]}
+ */
 export const STORAGE_OPTIONS = [
     "embedded",
     "normalized"
 ];
 
-// Attribute type handlers
+/**
+ * Normalize an attribute object to ensure proper structure and default values.
+ * @param {object} attribute - The attribute to normalize.
+ * @returns {object} - Normalized attribute.
+ */
 const TYPE_HANDLERS = {
     string: { getDefault: () => ({ type: "string", required: false, examples: [] }) },
     number: { getDefault: () => ({ type: "number", required: false, examples: [] }) },
@@ -25,7 +36,7 @@ const TYPE_HANDLERS = {
     null: { getDefault: () => ({ type: "null", required: false }) }
 };
 
-// Removes unnecessary keys based on the type of attribute
+// Trim an attribute object to only include allowed keys based on its type.
 const trimAttribute = (attribute) => {
     if (!attribute || typeof attribute !== 'object') {
         console.error("Invalid attribute:", attribute);
@@ -52,7 +63,11 @@ const trimAttribute = (attribute) => {
     );
 };
 
-// Normalizes the attribute to ensure it has the correct structure and properties
+/**
+ * Normalize an attribute object to ensure proper structure and default values.
+ * @param {object} attribute - The attribute to normalize.
+ * @returns {object} - Normalized attribute.
+ */
 export const normalizeAttribute = (attribute) => {
     if (!attribute || typeof attribute !== 'object') {
         console.error("Invalid attribute:", attribute);
@@ -80,7 +95,12 @@ export const normalizeAttribute = (attribute) => {
     return attribute;
 };
 
-// Checks if the selected key path is valid and if only one field is marked as isKey
+/**
+ * Validate that only one attribute at the root level is marked as isKey.
+ * @param {object} attributes - Attributes tree.
+ * @param {string} selectedKeyPath - Key path being toggled.
+ * @returns {{valid: boolean, reason?: string}} Validation result.
+ */
 export const validateIsKey = (attributes, selectedKeyPath) => {
     let keyCount = 0;
     const traverse = (obj, path = "", isRoot = true) => {
@@ -111,7 +131,11 @@ export const validateIsKey = (attributes, selectedKeyPath) => {
 // Returns the appropriate handler for the given type
 export const getTypeHandler = (type) => TYPE_HANDLERS[type] || TYPE_HANDLERS.string;
 
-// Creates a new attribute with the default values for the given type
+/**
+ * Retrieve default attribute template for a given data type.
+ * @param {string} type - Attribute data type.
+ * @returns {object} Default attribute object.
+ */
 export const createAttribute = (type, isNested = false) => {
     const attribute = getTypeHandler(type).getDefault();
     if (isNested && (type === 'object' || type === 'array')) {
@@ -123,7 +147,15 @@ export const createAttribute = (type, isNested = false) => {
     return attribute;
 };
 
-// Updates an attribute in the current attributes object based on the keyPath and field
+/**
+ * Update attributes object immutably based on a key path and field change.
+ * Handles renaming, type changes, toggling isKey, deleting, etc.
+ * @param {object} currentAttributes - Current attributes state.
+ * @param {string} keyPath - Dot-separated key path to attribute.
+ * @param {string} field - Field to update.
+ * @param {*} value - New value for the field.
+ * @returns {object} Updated attributes.
+ */
 export const updateAttribute = (currentAttributes, keyPath, field, value) => {
     const keys = keyPath.split('.');
     const updatedAttributes = JSON.parse(JSON.stringify(currentAttributes));
