@@ -44,7 +44,7 @@ function Generate() {
     try {
       const startTime = performance.now();
 
-      const response = await fetch("http://127.0.0.1:8000/generate-schema", {
+      const response = await fetch("http://127.0.0.1:8000/api/generate-schema", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

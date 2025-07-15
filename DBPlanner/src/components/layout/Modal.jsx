@@ -37,7 +37,7 @@ const Modal = ({ isOpen, onClose, children }) => {
             //send only the collections part from schema
             console.log("Full schema context:", JSON.stringify(schema.collections, null, 2));
 
-            const response = await fetch("http://127.0.0.1:8000/analyze-entity", {
+            const response = await fetch("http://127.0.0.1:8000/api/analyze-entity", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

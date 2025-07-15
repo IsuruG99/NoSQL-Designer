@@ -1,6 +1,41 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Python
 DBPlanner/backend/returnToken.py
 DBPlanner/backend/__pycache__/
+DBPlanner/backend/__pycache__/returnToken.cpython-313.pyc
 
-node_modules/
-DBPlanner/frontend/node_modules/
-backend.bat
+# Environment variables
+.env
+
+# Pycache Files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+DBPlanner\DBPlanner\backend\__pycache__
+
