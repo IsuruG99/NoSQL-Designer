@@ -6,18 +6,17 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from returnToken import return_token
-from typing import Optional
+from typing import Optional, Dict, Any
 from contextlib import asynccontextmanager
 from google import genai
 from google.genai import types
 
 
+# ----------------------- Gemini Client Setup -----------------------
 app = FastAPI()
-
-# Initialize Gemini client
 client = genai.Client(api_key=return_token())  # Assuming return_token() gives Gemini API key
 
-# CORS Configuration
+# CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -26,6 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ----------------------- Async Context Manager for AIOHTTP Session -----------------------
 async def invoke_gemini(prompt: str) -> Optional[str]:
     """Execute LLM call using Gemini API"""
     max_retries = 3
@@ -54,14 +54,21 @@ async def invoke_gemini(prompt: str) -> Optional[str]:
             else:
                 raise HTTPException(status_code=500, detail=f"API connection failed after {max_retries} attempts: {str(e)}")
 
+
+# ----------------------- Request Models -----------------------
 class SchemaRequest(BaseModel):
     description: str
     entities: Optional[str] = None
     constraints: Optional[str] = None
     mode: Optional[str] = "Detailed"  # "Detailed" or "Simplified"
 
+class AnalyzeRequest(BaseModel):
+    name: str
+    entity: Dict[str, Any]
+    collections: Dict[str, Any]
 
-# Must be appended to top after AI generates PROMPT_SCHEMA
+
+# ----------------------- Schema Generation Example Formats -----------------------
 TOP_SCHEMA_SEGMENT = {
     "$schema": "http://json-schema.org/draft-07/schema#",
   "$meta": {
@@ -117,8 +124,6 @@ PROMPT_SCHEMA={
     }
   }
 }
-
-# Must be appended to bottom after AI generates PROMPT_SCHEMA
 BOTTOM_SCHEMA_SEGMENT = {
     "exportOptions": {
     "mongodb": {
@@ -139,6 +144,8 @@ BOTTOM_SCHEMA_SEGMENT = {
     }
   }
 }
+
+# ----------------------- API Endpoints -----------------------
 
 @app.post("/generate-schema")
 async def generate(data: SchemaRequest):
@@ -218,6 +225,83 @@ async def generate(data: SchemaRequest):
             raise HTTPException(status_code=422, detail=f"Invalid JSON response from AI: {str(e)}")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Schema generation failed: {str(e)}")
+    
+@app.post("/analyze-entity")
+async def analyze_entity(data: AnalyzeRequest):
+    if not data.name or not data.entity:
+        raise HTTPException(status_code=400, detail="Missing entity name or structure")
+
+    analyzeOutputFormat = {
+        "Required Field Changes": [
+            "Rename 'videoID' to '_id' (string, required: true) to serve as the primary identifier.",
+            "Set 'videoURL' (string) to required: true as it's essential for a video entry."
+        ],
+        "Optional Fields to Add": [
+            "Add 'description' (string, required: false) for detailed information."
+        ],
+        "Computed / Denormalized Fields": [
+            "Add 'viewsCount' (number, required: true, default: 0) to track video viewership."
+        ],
+        "Index Recommendations": [
+            "On '_id' for efficient primary key lookups."
+        ]
+    }
+
+    prompt = (
+        f"You are a NoSQL schema analyst reviewing a collection named '{data.name}'.\n\n"
+        f"=== Target Collection ===\n"
+        f"{json.dumps(data.entity, indent=2)}\n\n"
+        f"=== Other Collections in Schema (Context Only) ===\n"
+        f"{json.dumps({k: v['attributes'] for k, v in data.collections.items() if k != data.name}, indent=2)}\n\n"
+        "Analyze only the target collection.\n"
+        "Use these 4 categories to group your suggestions:\n"
+        "1. Required Field Changes — rename fields, fix required flags, adjust ID format\n"
+        "2. Optional Fields to Add — useful fields to improve the schema but not mandatory\n"
+        "3. Computed / Denormalized Fields — fields to store counts, totals, or derived data\n"
+        "4. Index Recommendations — suggest which fields to index to speed up queries\n\n"
+        "Rules:\n"
+        "1. Write suggestions clearly and simply, so beginners to intermediate users can understand.\n"
+        "2. Avoid jargon, complex database theory, or deep industry standards.\n"
+        "3. Be concise; focus on what to do, not why.\n"
+        "4. Only use basic NoSQL types: string, number, boolean, object, array, date.\n"
+        "5. Output a JSON object with exactly these 4 keys, each containing an array of suggestion strings.\n"
+        "6. If a category has no suggestions, you may omit it from the JSON.\n"
+        "7. Do not include explanations or definitions.\n"
+        "8. Respond **only** with the JSON object — no markdown, no commentary.\n\n"
+        f"Expected format example:\n"
+        f"{json.dumps(analyzeOutputFormat, indent=2)}"
+    )
+
+
+    try:
+        suggestion_raw = await invoke_gemini(prompt)
+        if suggestion_raw is None:
+            return {"suggestion": {"error": "No response from AI"}}
+
+        cleaned = suggestion_raw.strip()
+        if cleaned.startswith("```"):
+            # Remove code fences and possible language declaration
+            lines = cleaned.split("\n")
+            # Remove first line if starts with ```
+            if lines[0].startswith("```"):
+                lines.pop(0)
+            # Remove last line if starts with ```
+            if lines[-1].startswith("```"):
+                lines.pop(-1)
+            cleaned = "\n".join(lines).strip()
+
+        try:
+            parsed_json = json.loads(cleaned)
+            # Filter out any keys with empty arrays to avoid clutter
+            filtered_json = {k: v for k, v in parsed_json.items() if isinstance(v, list) and len(v) > 0}
+            return {"suggestion": filtered_json}
+        except json.JSONDecodeError:
+            return {"suggestion": {"error": "Failed to parse AI JSON response", "raw": suggestion_raw}}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Entity analysis failed: {str(e)}")
+
+
 
 @app.get("/")
 async def read_root():

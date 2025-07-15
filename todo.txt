@@ -1,10 +1,19 @@
 TODOLIST
 
+Completion: 70%
+
 TODO (Main Points)
+- Load JSON method
+- Simplified Generation method
+- Export should take the existing examples within entities.
+- Store Suggestions in Entities? maybe a metadata suggestions storage per collection.
+Secondary
+- Suggestion Refinements?
 
 Backend Functionality
-1. Chutes Connectivity (DS V3 5024)
-2. Prompt Mostly Refined
+1. Gemini Connectivity (Flash Pro Trial)
+2. Main Prompt Mostly Refined
+3. Secnodary Prompt half refined
 3. Prompt failsafe set (3 Repeats, 120s wait time)
 
 Designer Functionality
@@ -12,12 +21,14 @@ Designer Functionality
 2. Add Attribute function
 - Only show Add for base level attributes
 3. Edit Card Functions Almost All Complete
+- Suggestion for an individual Card function works
 4. Delete Card inside modal
 5. Drag n Drop functionality 
 
 Export Functionality 
 1. Basic JSON Download
 2. Mongodb (JSON Per Collection)
+3. Cassandra (CQL per collection, load via cqlsh)
 
 Additional Functionality
 1. Editor Page ideas
@@ -29,8 +40,8 @@ Card Editor Ideas
 - Idk, a better UI? never happy
 
 Last change
-- Cassandra Import
-- Replaced Enums with String examples.
+- Suggestion API Refined
+- Suggestion API defined
+- Suggestion UI for asking AI Suggetsions via Editor
 - Stress Tested Prompts with drastically low single sentence descriptions.
-
-
+- Replaced Enums with String examples.
