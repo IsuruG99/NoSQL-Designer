@@ -231,35 +231,76 @@ async def analyze_entity(data: AnalyzeRequest):
     if not data.name or not data.entity:
         raise HTTPException(status_code=400, detail="Missing entity name or structure")
 
+    analyzeOutputFormat = {
+        "Required Field Changes": [
+            "Rename 'videoID' to '_id' (string, required: true) to serve as the primary identifier.",
+            "Set 'videoURL' (string) to required: true as it's essential for a video entry."
+        ],
+        "Optional Fields to Add": [
+            "Add 'description' (string, required: false) for detailed information."
+        ],
+        "Computed / Denormalized Fields": [
+            "Add 'viewsCount' (number, required: true, default: 0) to track video viewership."
+        ],
+        "Index Recommendations": [
+            "On '_id' for efficient primary key lookups."
+        ]
+    }
+
     prompt = (
-        f"You are a senior-level NoSQL schema analyst reviewing a single collection schema named '{data.name}'.\n\n"
+        f"You are a NoSQL schema analyst reviewing a collection named '{data.name}'.\n\n"
         f"=== Target Collection ===\n"
         f"{json.dumps(data.entity, indent=2)}\n\n"
         f"=== Other Collections in Schema (Context Only) ===\n"
         f"{json.dumps({k: v['attributes'] for k, v in data.collections.items() if k != data.name}, indent=2)}\n\n"
-        "Your task is to analyze ONLY the target collection above.\n\n"
-        "Follow these rules:\n"
-        "- Use bullet points only.\n"
-        "- Be concise but critical — this is a schema review, not a pass/fail.\n"
-        "- Suggest NEW fields commonly expected in such a collection.\n"
-        "- Suggest renaming fields for clarity or consistency (e.g., `authorId` vs. `userId`).\n"
-        "- Identify fields that may be redundant, unnecessary, or better computed (e.g., `likesCount`).\n"
-        "- Point out fields missing reasonable defaults (e.g., `likesCount` → default 0).\n"
-        "- Validate use of `required` vs. optional — should all fields really be required?\n"
-        "- Recommend indexes for query performance (e.g., foreign keys, timestamps).\n"
-        "- Limit to **1-level nesting only**: root-level only arrays/objects.\n"
-        "- Only use these allowed types: string, number, boolean, object, array, date.\n"
-        "- NEVER suggest use of 'null' type — omit optional fields instead.\n\n"
-        "Reference schema format (structure and valid types):\n"
-        f"{json.dumps(PROMPT_SCHEMA['collections'], indent=2)}\n\n"
-        "Output only bullet points — plain text, no JSON, no extra commentary."
+        "Analyze only the target collection.\n"
+        "Use these 4 categories to group your suggestions:\n"
+        "1. Required Field Changes — rename fields, fix required flags, adjust ID format\n"
+        "2. Optional Fields to Add — useful fields to improve the schema but not mandatory\n"
+        "3. Computed / Denormalized Fields — fields to store counts, totals, or derived data\n"
+        "4. Index Recommendations — suggest which fields to index to speed up queries\n\n"
+        "Rules:\n"
+        "1. Write suggestions clearly and simply, so beginners to intermediate users can understand.\n"
+        "2. Avoid jargon, complex database theory, or deep industry standards.\n"
+        "3. Be concise; focus on what to do, not why.\n"
+        "4. Only use basic NoSQL types: string, number, boolean, object, array, date.\n"
+        "5. Output a JSON object with exactly these 4 keys, each containing an array of suggestion strings.\n"
+        "6. If a category has no suggestions, you may omit it from the JSON.\n"
+        "7. Do not include explanations or definitions.\n"
+        "8. Respond **only** with the JSON object — no markdown, no commentary.\n\n"
+        f"Expected format example:\n"
+        f"{json.dumps(analyzeOutputFormat, indent=2)}"
     )
 
+
     try:
-        suggestion = await invoke_gemini(prompt)
-        return {"suggestion": suggestion}
+        suggestion_raw = await invoke_gemini(prompt)
+        if suggestion_raw is None:
+            return {"suggestion": {"error": "No response from AI"}}
+
+        cleaned = suggestion_raw.strip()
+        if cleaned.startswith("```"):
+            # Remove code fences and possible language declaration
+            lines = cleaned.split("\n")
+            # Remove first line if starts with ```
+            if lines[0].startswith("```"):
+                lines.pop(0)
+            # Remove last line if starts with ```
+            if lines[-1].startswith("```"):
+                lines.pop(-1)
+            cleaned = "\n".join(lines).strip()
+
+        try:
+            parsed_json = json.loads(cleaned)
+            # Filter out any keys with empty arrays to avoid clutter
+            filtered_json = {k: v for k, v in parsed_json.items() if isinstance(v, list) and len(v) > 0}
+            return {"suggestion": filtered_json}
+        except json.JSONDecodeError:
+            return {"suggestion": {"error": "Failed to parse AI JSON response", "raw": suggestion_raw}}
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Entity analysis failed: {str(e)}")
+
 
 
 @app.get("/")

@@ -12,6 +12,14 @@ const Modal = ({ isOpen, onClose, children }) => {
 
     if (!isOpen) return null;
 
+    JSON.parseSafe = (str) => {
+        try {
+            return JSON.parse(str);
+        } catch {
+            return null;
+        }
+    };
+
     const handleAnalyze = async () => {
         if (!selectedEntity || !selectedEntity.name) return;
 
@@ -88,7 +96,7 @@ const Modal = ({ isOpen, onClose, children }) => {
                     </div>
 
                     {/* Modal content */}
-                    <div className="flex flex-col h-full p-4 overflow-y-auto max-h-[calc(85vh-3rem)] w-full">
+                    <div className="flex flex-col h-full p-4 overflow-y-auto max-h-[calc(85vh-3rem)] custom-scrollbar w-full">
                         {activeTab === 'Editor' ? (
                             <div className="flex-1 w-full">
                                 {children}
@@ -102,15 +110,34 @@ const Modal = ({ isOpen, onClose, children }) => {
                                 >
                                     {loading ? 'Analyzing...' : 'Analyze'}
                                 </button>
-                                <textarea
-                                    readOnly
-                                    className="flex-1 bg-gray-800 text-gray-300 p-2 rounded w-full border border-gray-700 resize-none custom-scrollbar"
-                                    placeholder="Analysis will appear here..."
-                                    value={suggestion}
-                                    rows={15}
-                                />
 
+                                <div className="flex-1 overflow-y-auto border border-gray-700 rounded bg-gray-800 p-3 custom-scrollbar space-y-6">
+                                    {(() => {
+                                        const parsed = suggestion; // already parsed JSON object from backend
+
+                                        if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+                                            return <p className="text-gray-400 text-sm whitespace-pre-wrap">{suggestion}</p>;
+                                        }
+
+                                        return Object.entries(parsed)
+                                            .filter(([, points]) => Array.isArray(points) && points.length > 0)
+                                            .map(([category, points], idx) => (
+                                                <div key={idx} className="mb-6">
+                                                    <h3 className="text-cyan-400 text-lg font-semibold mb-2">{category}</h3>
+                                                    <div className="max-h-40 overflow-y-auto custom-scrollbar bg-gray-800 p-3 rounded">
+                                                        <ul className="list-disc pl-5 space-y-1 text-sm text-gray-200 font-medium">
+                                                            {points.map((point, i) => (
+                                                                <li key={i}>{point}</li>
+                                                            ))}
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            ));
+
+                                    })()}
+                                </div>
                             </div>
+
                         )}
                     </div>
                 </div>
