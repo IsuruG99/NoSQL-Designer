@@ -5,6 +5,7 @@ import { getMongoExport } from './components/exporters/mongoExporter.js';
 import { getFirebaseExport } from './components/exporters/firebaseExporter.js';
 import { downloadFile } from './utils/downloadFile.js';
 import './css/index.css';
+import ajv from 'ajv';
 
 const ExportComponent = () => {
     const { schema } = useContext(SchemaContext);
@@ -29,7 +30,11 @@ const ExportComponent = () => {
 
     const handleMongoExport = (collectionName) => {
         const exportData = getMongoExport(schema.collections[collectionName], collectionName);
-        downloadFile(exportData.content, exportData.fileName, exportData.mimeType);
+        try {
+            downloadFile(exportData.content, exportData.fileName, exportData.mimeType);
+        } catch (error) {
+            setValidationError(`Invalid JSON: ${error.message}`);
+        }
     };
 
     return (
