@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import analyze, generate
 
+# Init
 app = FastAPI()
 
 # CORS
@@ -13,10 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Main Endpoints
 app.include_router(analyze.router, prefix="/api")
 app.include_router(generate.router, prefix="/api")
 
+# Root endpoint
 @app.get("/")
 async def read_root():
     return {"message": "Welcome to the FastAPI application!"}
