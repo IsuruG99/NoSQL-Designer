@@ -5,10 +5,10 @@ Completion: 70%
 TODO (Main Points)
 - Load JSON method
 - Simplified Generation method
-- Export should take the existing examples within entities.
-- Store Suggestions in Entities? maybe a metadata suggestions storage per collection.
+- Firestore Export
 Secondary
 - Suggestion Refinements?
+- Store Suggestions in Entities? maybe a metadata suggestions storage per collection.
 
 Backend Functionality
 1. Gemini Connectivity (Flash Pro Trial)
@@ -40,8 +40,10 @@ Card Editor Ideas
 - Idk, a better UI? never happy
 
 Last change
-- Suggestion API Refined
+- Modularity changes
+- Export takes generated examples as dummy data
+- AJV Validation to MongoDB Export only
+- Suggestion API refined
 - Suggestion API defined
 - Suggestion UI for asking AI Suggetsions via Editor
 - Stress Tested Prompts with drastically low single sentence descriptions.
-- Replaced Enums with String examples.

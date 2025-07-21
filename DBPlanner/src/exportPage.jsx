@@ -2,7 +2,8 @@ import React, { useContext, useState } from 'react';
 import { SchemaContext } from './context/SchemaContext.jsx';
 import { getCassandraExport } from './components/exporters/cassandraExporter.js';
 import { getMongoExport } from './components/exporters/mongoExporter.js';
-import { getFirebaseExport } from './components/exporters/firebaseExporter.js';
+import { getJSONExport } from './components/exporters/jsonExporter.js';
+import { getFirestoreExport } from './components/exporters/firestoreExporter.js';
 import { downloadFile } from './utils/downloadFile.js';
 import './css/index.css';
 import ajv from 'ajv';
@@ -41,17 +42,33 @@ const ExportComponent = () => {
         <div className="flex flex-col items-center p-4 bg-gray-900 text-white min-h-screen w-full">
             <h2 className='text-xl font-bold mb-4 text-center'>Choose Export Target</h2>
             <div className="flex space-x-6 mb-6">
+                <div onClick={() => setSelectedDB('firestore')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
+                    <p className='text-lg font-semibold text-center'>Firestore</p>
+                </div>
                 <div onClick={() => setSelectedDB('mongodb')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
                     <p className='text-lg font-semibold text-center'>MongoDB</p>
                 </div>
                 <div onClick={() => setSelectedDB('cassandra')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
                     <p className='text-lg font-semibold text-center'>Cassandra</p>
                 </div>
-                <div onClick={() => setSelectedDB('firebase')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
-                    <p className='text-lg font-semibold text-center'>Firebase (Raw JSON)</p>
+                <div onClick={() => setSelectedDB('json')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
+                    <p className='text-lg font-semibold text-center'>Raw JSON</p>
                 </div>
             </div>
-
+            {selectedDB === 'firestore' && (
+                <div className="w-full max-w-2xl mt-6"> 
+                    <h3 className='text-lg font-semibold mb-4 text-center'>Firestore Export</h3>
+                    <p className='text-center text-gray-400'>Export logic is not yet implemented.</p>
+                    <button
+                        onClick={() => {
+                            const exportData = getFirestoreExport(schema);
+                            downloadFile(exportData, 'firestore_export.json', 'application/json');
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 border-b-4 border-blue-800 shadow">
+                        Download Firestore Export (Not Implemented)
+                    </button>
+                </div>
+            )}
             {selectedDB === 'mongodb' && (
                 <div className="w-full max-w-2xl mt-6">
                     <h3 className='text-lg font-semibold mb-4 text-center'>Download MongoDB-Compatible JSON per Collection</h3>
@@ -70,21 +87,19 @@ const ExportComponent = () => {
                     </div>
                 </div>
             )}
-
-            {selectedDB === 'firebase' && (
+            {selectedDB === 'json' && (
                 <div className="mt-6 text-center">
                     <button
                         onClick={() => {
-                            const exportData = getFirebaseExport(schema);
+                            const exportData = getJSONExport(schema);
                             downloadFile(exportData.content, exportData.fileName, exportData.mimeType);
                         }}
                         className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 border-b-4 border-green-800 shadow"
                     >
-                        Download Full Schema JSON
+                        Download Full Schema as JSON
                     </button>
                 </div>
             )}
-
             {selectedDB === 'cassandra' && (
                 <div className="w-full max-w-2xl mt-6">
                     <h3 className='text-lg font-semibold mb-4 text-center'>Cassandra Table Export</h3>
