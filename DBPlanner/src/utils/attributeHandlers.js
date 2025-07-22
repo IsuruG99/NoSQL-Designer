@@ -158,7 +158,7 @@ export const createAttribute = (type, isNested = false) => {
  */
 export const updateAttribute = (currentAttributes, keyPath, field, value) => {
     const keys = keyPath.split('.');
-    const updatedAttributes = JSON.parse(JSON.stringify(currentAttributes));
+    const updatedAttributes = structuredClone(currentAttributes);
     let current = updatedAttributes;
 
     for (let i = 0; i < keys.length - 1; i++) {

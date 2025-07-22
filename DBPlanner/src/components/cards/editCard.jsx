@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react';
+import React, { memo, useContext, useState, useEffect, useCallback, use } from 'react';
 import { SchemaContext } from '../../context/SchemaContext';
 import '../../css/customScrollbar.css';
 import {
@@ -9,6 +9,8 @@ import {
 import { AttributeEditor } from '../layout/attributeEditor';
 import { TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
+const MemoizedAttributeEditor = memo(AttributeEditor);
+
 /**
  * EditableCard allows creating or editing a schema entity (collection).
  * 
@@ -18,6 +20,8 @@ import { TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
  */
 function EditableCard({ handleCloseModal, isNewCard = false }) {
     const {
+        entities,
+        setEntities,
         schema,
         setSchema,
         tempSelectedEntity,
@@ -26,8 +30,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         setOriginalSelectedEntity,
         setSelectedEntity
     } = useContext(SchemaContext);
-
-    const { entities, setEntities } = useContext(SchemaContext);
     const [entityName, setEntityName] = useState(isNewCard ? "" : tempSelectedEntity?.name || "");
     const [entityDescription, setEntityDescription] = useState(isNewCard ? "" : tempSelectedEntity?.description || "");
     const [tempKeys, setTempKeys] = useState(Object.keys(tempSelectedEntity?.attributes || {}));
@@ -40,24 +42,26 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         }
     }, [tempSelectedEntity, isNewCard]);
 
-    const handleNameChange = (e) => {
+    const handleNameChange = useCallback((e) => {
         const newName = e.target.value;
         setEntityName(newName);
-        setTempSelectedEntity({ ...tempSelectedEntity, name: newName });
-    };
+        setTempSelectedEntity(prev => ({ ...prev, name: newName }));
+    }, [setTempSelectedEntity]);
 
-    const handleDescriptionChange = (e) => {
+
+    const handleDescriptionChange = useCallback((e) => {
         const newDescription = e.target.value;
         setEntityDescription(newDescription);
         setTempSelectedEntity({ ...tempSelectedEntity, description: newDescription });
-    };
+    }, [tempSelectedEntity]);
 
-    const updateAttributes = (updatedAttributes) => {
+    const updateAttributes = useCallback((updatedAttributes) => {
         setTempSelectedEntity({ ...tempSelectedEntity, attributes: updatedAttributes });
         setTempKeys(Object.keys(updatedAttributes));
-    };
+    }, [tempSelectedEntity]);
 
-    const handleAttributeChange = (keyPath, field, value) => {
+    // const handleAttributeChange = (keyPath, field, value) => {
+    const handleAttributeChange = useCallback((keyPath, field, value) => {
         const updatedAttributes = updateAttribute(
             tempSelectedEntity?.attributes || {},
             keyPath,
@@ -69,22 +73,21 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         if (field === 'rename') {
             setTempKeys(Object.keys(updatedAttributes));
         }
-    };
+    }, [tempSelectedEntity, updateAttributes]);
 
-    const handleAddAttribute = () => {
+    const handleAddAttribute = useCallback(() => {
         const newKey = `newAttribute${tempKeys.length + 1}`;
         const updatedAttributes = {
             ...(tempSelectedEntity?.attributes || {}),
             [newKey]: createAttribute("string")
         };
         updateAttributes(updatedAttributes);
-    };
+    }, [tempKeys, tempSelectedEntity, updateAttributes]);
 
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         if (!originalSelectedEntity?.name) return;
         if (!window.confirm(`Are you sure you want to delete "${originalSelectedEntity.name}"? This cannot be undone.`)) return;
 
-        // Remove the entity from entities array
         const updatedEntities = entities.filter(e => e.name !== originalSelectedEntity.name);
         setEntities(updatedEntities);
 
@@ -92,9 +95,18 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         setTempSelectedEntity(null);
         setSelectedEntity(null);
         handleCloseModal();
-    };
+    }, [
+        entities,
+        originalSelectedEntity,
+        setEntities,
+        setOriginalSelectedEntity,
+        setTempSelectedEntity,
+        setSelectedEntity,
+        handleCloseModal
+    ]);
 
-    const handleSave = () => {
+
+    const handleSave = useCallback(() => {
         try {
             if (!entityName.trim()) throw new Error("Collection name cannot be blank.");
             if (!tempSelectedEntity?.attributes || Object.keys(tempSelectedEntity.attributes).length === 0) {
@@ -103,7 +115,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 
             let updatedEntities;
             if (isNewCard) {
-                // Add new entity
                 updatedEntities = [
                     ...entities,
                     {
@@ -113,7 +124,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                     }
                 ];
             } else {
-                // Edit existing entity
                 updatedEntities = entities.map(e =>
                     e.name === originalSelectedEntity.name
                         ? {
@@ -132,9 +142,28 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             setSelectedEntity(null);
             handleCloseModal();
         } catch (error) {
-            alert(error.message);
+            toast.error(error.message, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true
+            });
+            console.error("Error saving entity:", error);
         }
-    };
+    }, [
+        entityName,
+        entityDescription,
+        tempSelectedEntity,
+        entities,
+        isNewCard,
+        originalSelectedEntity,
+        setEntities,
+        setOriginalSelectedEntity,
+        setTempSelectedEntity,
+        setSelectedEntity,
+        handleCloseModal
+    ]);
+
     return (
         <div className="w-full h-full flex flex-col bg-gray-800 rounded-lg shadow-lg">
             {/* Header Section */}
@@ -145,7 +174,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                         type="text"
                         value={entityName}
                         onChange={handleNameChange}
-                        className="text-xl px-2 font-bold bg-gray-700 text-white p-1 rounded w-full"/>
+                        className="text-xl px-2 font-bold bg-gray-700 text-white p-1 rounded w-full" />
                 </div>
                 {entityDescription && (
                     <div className="mb-2">
@@ -154,7 +183,7 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                             type="text"
                             value={entityDescription}
                             onChange={handleDescriptionChange}
-                            className="bg-gray-700 px-2 text-white p-1 rounded w-full"/>
+                            className="bg-gray-700 px-2 text-white p-1 rounded w-full" />
                     </div>
                 )}
             </div>
@@ -167,12 +196,13 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 
                 <ul className="space-y-2">
                     {tempKeys.map((key) => (
-                        <AttributeEditor
+                        // <AttributeEditor
+                        <MemoizedAttributeEditor
                             key={key}
                             attributeKey={key}
                             attributeValue={tempSelectedEntity?.attributes[key]}
                             onAttributeChange={handleAttributeChange}
-                            isNested={false}/>
+                            isNested={false} />
                     ))}
                 </ul>
 
