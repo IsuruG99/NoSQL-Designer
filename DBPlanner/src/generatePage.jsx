@@ -27,11 +27,6 @@ function Generate() {
   }, []);
 
   const handleGenerate = useCallback(async () => {
-    if (!formData.description.trim()) {
-      setError("Description is required");
-      return;
-    }
-
     setLoading(true);
     setElapsedTime(0);
     setGenerated(false);
@@ -41,52 +36,90 @@ function Generate() {
       setElapsedTime(prev => prev + 1);
     }, 1000);
 
+    const handleSchemaResponse = (data) => {
+      if (data.schema) {
+        console.log("Received schema:", data.schema);
+        setSchema(data.schema);
+
+        if (data.schema.collections && typeof data.schema.collections === "object") {
+          setEntities(Object.values(data.schema.collections));
+        } else if (Array.isArray(data.schema.entities)) {
+          setEntities(data.schema.entities);
+        }
+
+        setGenerated(true);
+      } else {
+        throw new Error(data.detail || "Invalid schema format received");
+      }
+    };
+
     try {
       const startTime = performance.now();
 
+      // Mode: Upload File
+      if (inputMode === "Upload") {
+        const file = formData.uploadedFile;
+        if (!file) {
+          throw new Error("Please upload a file");
+        }
+
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const content = e.target.result;
+            const response = await fetch("http://127.0.0.1:8000/api/convert-schema", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ fileContent: content, filename: file.name })
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            handleSchemaResponse(data);
+          } catch (err) {
+            console.error("Upload error:", err);
+            setError(err.message);
+            setSchema(null);
+          } finally {
+            clearInterval(timer);
+            setLoading(false);
+          }
+        };
+
+        reader.readAsText(file);
+        return; // Exit outer try
+      }
+
+      // Modes: Detailed / Simplified
+      if (!formData.description.trim()) {
+        throw new Error("Description is required");
+      }
+
       const response = await fetch("http://127.0.0.1:8000/api/generate-schema", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          mode: inputMode, // New field added
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, mode: inputMode })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
 
       const data = await response.json();
       const endTime = performance.now();
       console.log(`API call took ${endTime - startTime}ms`);
 
-      if (data.schema) {
-        console.log("Received schema:", data.schema);
-        setSchema(data.schema);
-
-        // Set entities based on the schema format
-        if (data.schema.collections && typeof data.schema.collections === "object") {
-          const entitiesArr = Object.values(data.schema.collections);
-          setEntities(entitiesArr);
-        } else if (Array.isArray(data.schema.entities)) {
-          setEntities(data.schema.entities); // fallback for legacy
-        }
-        setGenerated(true);
-      } else {
-        throw new Error(data.detail || "Invalid schema format received");
-      }
+      handleSchemaResponse(data);
     } catch (err) {
       console.error("Generation error:", err);
       setError(err.message);
       setSchema(null);
     } finally {
-      clearInterval(timer);
-      setLoading(false);
+      if (inputMode !== "Upload") {
+        clearInterval(timer);
+        setLoading(false);
+      }
     }
-  }, [formData, setSchema]);
+  }, [formData, inputMode, setSchema, setEntities]);
+
 
   const handleNavigate = useCallback(() => {
     navigate("/editor");
@@ -102,12 +135,13 @@ function Generate() {
         >
           <option value="Detailed">Detailed Input</option>
           <option value="Simplified">Simplified Sentence</option>
+          <option value="Upload">Upload File</option>
         </select>
       </div>
       <div className="w-full max-w-4xl space-y-4">
         {/* Form Inputs */}
         <div className="space-y-4">
-          {inputMode === "Detailed" ? (
+          {inputMode === "Detailed" && (
             <>
               <textarea
                 value={formData.description}
@@ -132,7 +166,9 @@ function Generate() {
                 aria-label="Constraints"
               />
             </>
-          ) : (
+          )}
+
+          {inputMode === "Simplified" && (
             <div className="flex flex-wrap bg-gray-800 text-white p-3 rounded-lg">
               <span>A&nbsp;</span>
               <input
@@ -151,11 +187,22 @@ function Generate() {
               />
               <span>.</span>
             </div>
-
+          )}
+          {inputMode === "Upload" && (
+            <div className="bg-gray-800 p-3 rounded-lg text-white space-y-2">
+              <p className="text-sm">Upload your schema file (.json, .cql, .bson)</p>
+              <input
+                type="file"
+                accept=".json,.txt,.cql,.bson"
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
+                  uploadedFile: e.target.files?.[0] || null
+                }))}
+                className="w-full text-white bg-gray-700 p-2 rounded-lg"
+              />
+            </div>
           )}
         </div>
-
-
         {/* Action Buttons */}
         <div className="flex flex-col space-y-3">
           <button

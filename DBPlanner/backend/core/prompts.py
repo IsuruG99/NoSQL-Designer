@@ -168,3 +168,28 @@ def get_analyze_prompt(data: Dict[str, Any]) -> str:
         f"Expected format example:\n"
         f"{json.dumps(analyze_output_format, indent=2)}"
     )
+
+def get_convert_prompt(file_content: str, filename: str) -> str:
+    """Prompt to convert raw file contents (JSON, BSON, CQL, SQL, etc.) into schema format"""
+    return (
+        f"You are a strict NoSQL schema converter.\n\n"
+        f"Task:\n"
+        f"- Analyze the given file content (from an uploaded schema-related file).\n"
+        f"- DO NOT modify any actual data values or meaning.\n"
+        f"- Your job is only to interpret and restructure it into a clean NoSQL schema.\n\n"
+        f"Output Format:\n"
+        f"Return only the `collections` section, using this exact structure:\n"
+        f"{json.dumps(SCHEMA_TEMPLATES['example']['collections'], indent=2)}\n\n"
+        f"Input File: {filename}\n\n"
+        f"=== Begin File Content ===\n"
+        f"{file_content}\n"
+        f"=== End File Content ===\n\n"
+        f"Instructions:\n"
+        f"1. Infer collections and their attributes based on field names, types, and nesting.\n"
+        f"2. Stick to these types only: string, number, boolean, object, array, date.\n"
+        f"3. Use `structure: 'embedded'` for nested objects/arrays.\n"
+        f"4. Include 'examples' with 3–5 values per field where possible (for string/number/date only).\n"
+        f"5. Skip irrelevant metadata or comments — only schema logic matters.\n"
+        f"6. DO NOT return SQL or other code — only return the final JSON `collections` structure.\n"
+        f"7. Validate your output — make sure it's clean JSON and uses the sample schema shape.\n"
+    )
