@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { DATA_TYPES, STORAGE_OPTIONS } from './attributeHandlers';
+import { DATA_TYPES, STORAGE_OPTIONS } from '../../utils/attributeHandlers';
 
 /**
  * AttributeEditor renders a single attribute's editing interface.

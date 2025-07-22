@@ -5,8 +5,8 @@ import {
     getTypeHandler,
     createAttribute,
     updateAttribute
-} from '../attributeHandlers';
-import { AttributeEditor } from '../AttributeEditor';
+} from '../../utils/attributeHandlers';
+import { AttributeEditor } from '../layout/attributeEditor';
 import { TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
 /**
