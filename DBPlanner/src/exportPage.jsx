@@ -3,7 +3,7 @@ import { SchemaContext } from './context/SchemaContext.jsx';
 import { getCassandraExport } from './components/exporters/cassandraExporter.js';
 import { getMongoExport } from './components/exporters/mongoExporter.js';
 import { getJSONExport } from './components/exporters/jsonExporter.js';
-import { getFirestoreExport } from './components/exporters/firestoreExporter.js';
+import { getFirebaseExport } from './components/exporters/firebaseExporter.js';
 import { downloadFile } from './utils/downloadFile.js';
 import './css/index.css';
 import ajv from 'ajv';
@@ -56,19 +56,49 @@ const ExportComponent = () => {
                 </div>
             </div>
             {selectedDB === 'firestore' && (
-                <div className="w-full max-w-2xl mt-6"> 
-                    <h3 className='text-lg font-semibold mb-4 text-center'>Firestore Export</h3>
-                    <p className='text-center text-gray-400'>Export logic is not yet implemented.</p>
+                <div className="w-full max-w-2xl mt-6 text-center">
+                    <h3 className="text-lg font-semibold mb-4">Firebase / Firestore</h3>
                     <button
                         onClick={() => {
-                            const exportData = getFirestoreExport(schema);
-                            downloadFile(exportData, 'firestore_export.json', 'application/json');
+                            const exportData = getJSONExport(schema, true);
+                            downloadFile(exportData.content, exportData.fileName, exportData.mimeType);
                         }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 border-b-4 border-blue-800 shadow">
-                        Download Firestore Export (Not Implemented)
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 border-b-4 border-blue-800 shadow"
+                    >
+                        Download JSON
                     </button>
+                    <div className="mt-4 text-sm text-gray-300 max-w-xl mx-auto">
+                        <p>
+                            This JSON export can be directly imported into{' '}
+                            <strong>
+                                <a
+                                    href="https://console.firebase.google.com/project/_/database/data"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline hover:text-blue-700"
+                                >
+                                    Firebase Realtime Database
+                                </a>
+                            </strong>.
+                        </p>
+                        <p>
+                            For <strong>Firestore</strong>, importing requires a script using the Firebase SDK.
+                            See the official{' '}
+                            <strong>
+                            <a
+                                href="https://firebase.google.com/docs/firestore/manage-data/add-data#node.js_2"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="underline hover:text-blue-700"
+                            >
+                                Firestore docs
+                            </a></strong>{' '}
+                            for guidance.
+                        </p>
+                    </div>
                 </div>
             )}
+
             {selectedDB === 'mongodb' && (
                 <div className="w-full max-w-2xl mt-6">
                     <h3 className='text-lg font-semibold mb-4 text-center'>Download MongoDB-Compatible JSON per Collection</h3>
