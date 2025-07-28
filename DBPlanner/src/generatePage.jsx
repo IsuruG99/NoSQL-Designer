@@ -4,11 +4,17 @@ import { SchemaContext } from "./context/SchemaContext.jsx";
 import Panel from "./components/layout/basicPanel.jsx";
 
 function Generate() {
-  const [formData, setFormData] = useState({
+  const [detailedData, setDetailedData] = useState({
     description: "A simple coffee shop",
     entities: "staff, orders, ingredients",
     constraints: "don't store OrderID"
   });
+  const [simplifiedData, setSimplifiedData] = useState({
+    systemType: "",
+    dataPurpose: ""
+  });
+  const [uploadFile, setUploadFile] = useState(null);
+
 
   const [inputMode, setInputMode] = useState("Detailed");
   const [loading, setLoading] = useState(false);
@@ -19,12 +25,13 @@ function Generate() {
   const { entities, setEntities } = useContext(SchemaContext);
   const navigate = useNavigate();
 
-  const handleInputChange = useCallback((field) => (e) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
-  }, []);
+  const handleDetailedChange = (field) => (e) => {
+    setDetailedData(prev => ({ ...prev, [field]: e.target.value }));
+  };
+  const handleSimplifiedChange = (field) => (e) => {
+    setSimplifiedData(prev => ({ ...prev, [field]: e.target.value }));
+  };
+
 
   const handleGenerate = useCallback(async () => {
     setLoading(true);
@@ -32,9 +39,7 @@ function Generate() {
     setGenerated(false);
     setError(null);
 
-    const timer = setInterval(() => {
-      setElapsedTime(prev => prev + 1);
-    }, 1000);
+    const timer = setInterval(() => setElapsedTime(prev => prev + 1), 1000);
 
     const handleSchemaResponse = (data) => {
       if (data.schema) {
@@ -51,11 +56,8 @@ function Generate() {
     };
 
     try {
-      const startTime = performance.now();
-
       if (inputMode === "Upload") {
-        const file = formData.uploadedFile;
-        if (!file) throw new Error("Please upload a file");
+        if (!uploadFile) throw new Error("Please upload a file");
 
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -64,9 +66,8 @@ function Generate() {
             const response = await fetch("http://127.0.0.1:8000/api/convert-schema", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ fileContent: content, filename: file.name })
+              body: JSON.stringify({ fileContent: content, filename: uploadFile.name })
             });
-
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
             handleSchemaResponse(data);
@@ -78,16 +79,39 @@ function Generate() {
             setLoading(false);
           }
         };
-        reader.readAsText(file);
+        reader.readAsText(uploadFile);
         return;
       }
 
-      if (!formData.description.trim()) throw new Error("Description is required");
+      // Dynamic payload per mode
+      let payload;
+      if (inputMode === "Simplified") {
+        const { systemType, dataPurpose } = simplifiedData;
+        if (!systemType.trim() || !dataPurpose.trim()) {
+          throw new Error("Both fields are required for Simplified input");
+        }
+        payload = {
+          systemType,
+          dataPurpose,
+          mode: "Simplified"
+        };
+      } else if (inputMode === "Detailed") {
+        const { description, entities, constraints } = detailedData;
+        if (!description.trim()) {
+          throw new Error("Description is required for Detailed input");
+        }
+        payload = {
+          description,
+          entities,
+          constraints,
+          mode: "Detailed"
+        };
+      }
 
       const response = await fetch("http://127.0.0.1:8000/api/generate-schema", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, mode: inputMode })
+        body: JSON.stringify(payload)
       });
 
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -102,7 +126,8 @@ function Generate() {
         setLoading(false);
       }
     }
-  }, [formData, inputMode, setSchema, setEntities]);
+  }, [inputMode, detailedData, simplifiedData, uploadFile, setSchema, setEntities]);
+
 
   const handleNavigate = useCallback(() => navigate("/editor"), [navigate]);
 
@@ -127,21 +152,21 @@ function Generate() {
           {inputMode === "Detailed" && (
             <>
               <textarea
-                value={formData.description}
-                onChange={handleInputChange("description")}
+                value={detailedData.description}
+                onChange={handleDetailedChange("description")}
                 placeholder="Description *"
                 className="w-full p-3 bg-gray-800 text-white rounded-lg h-24 resize-none"
                 required
               />
               <input
-                value={formData.entities}
-                onChange={handleInputChange("entities")}
+                value={detailedData.entities}
+                onChange={handleDetailedChange("entities")}
                 placeholder="Entities (comma-separated, optional)"
                 className="w-full p-3 bg-gray-800 text-white rounded-lg"
               />
               <input
-                value={formData.constraints}
-                onChange={handleInputChange("constraints")}
+                value={detailedData.constraints}
+                onChange={handleDetailedChange("constraints")}
                 placeholder="Constraints (comma-separated, optional)"
                 className="w-full p-3 bg-gray-800 text-white rounded-lg"
               />
@@ -153,15 +178,16 @@ function Generate() {
               <span>A&nbsp;</span>
               <input
                 type="text"
-                value={formData.systemType}
-                onChange={handleInputChange("description")}
+                value={simplifiedData.systemType}
+                onChange={handleSimplifiedChange("systemType")}
                 className="bg-gray-700 text-white px-2 py-1 rounded mx-1 min-w-[100px] flex-grow"
                 placeholder="Reservation"
               />
               <span>&nbsp;System, requires a NoSQL database to store&nbsp;</span>
               <input
                 type="text"
-                value={formData.dataPurpose}
+                value={simplifiedData.dataPurpose}
+                onChange={handleSimplifiedChange("dataPurpose")}
                 className="bg-gray-700 text-white px-2 py-1 rounded mx-1 min-w-[100px] flex-grow"
                 placeholder="customer bookings"
               />
@@ -175,10 +201,7 @@ function Generate() {
               <input
                 type="file"
                 accept=".json,.txt,.cql,.bson"
-                onChange={(e) => setFormData(prev => ({
-                  ...prev,
-                  uploadedFile: e.target.files?.[0] || null
-                }))}
+                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                 className="w-full text-white bg-gray-700 p-2 rounded-lg"
               />
             </div>
@@ -188,8 +211,8 @@ function Generate() {
         <div className="flex flex-col space-y-3 mt-6">
           <button
             onClick={handleGenerate}
-            disabled={loading || !formData.description.trim()}
-            className={`w-full p-3 rounded-lg font-semibold border-b-4 transition-all ${loading || !formData.description.trim()
+            disabled={loading || !detailedData.description.trim()}
+            className={`w-full p-3 rounded-lg font-semibold border-b-4 transition-all ${loading || !detailedData.description.trim()
               ? "bg-gray-600 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700 border-blue-800"}`}
           >

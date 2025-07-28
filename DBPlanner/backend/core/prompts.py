@@ -55,26 +55,6 @@ SCHEMA_TEMPLATES = {
                 }
             }
         }
-    },
-    "bottom_segment": {
-        "exportOptions": {
-            "mongodb": {
-                "indexes": [
-                    { 
-                        "collection": "Col1", 
-                        "fields": { "Status": 1 }, 
-                        "options": { "unique": False } 
-                    }
-                ]
-            },
-            "cassandra": {
-                "compaction": { "class": "SizeTieredCompactionStrategy" },
-                "clusteringOrder": { "Col1": "ASC" },
-            },
-            "firebase": {
-                "collectionGroups": ["Col1"]
-            }
-        }
     }
 }
 
@@ -82,23 +62,18 @@ def get_schema_prompt(data: Dict[str, Any], mode: str = "Detailed") -> str:
     """Generate the appropriate prompt based on the requested mode"""
     if mode == "Simplified":
         return (
-            f"You are given a vague description. Your task is to infer a useful NoSQL database schema from it.\n\n"
-            f"Description: {data['description']}\n\n"
+            f"You are designing a NoSQL schema for a {data['systemType']} system focused on {data['dataPurpose']}. "
+            f"Create a simple but practical schema for this specific domain.\n\n"
             f"Use this sample structure strictly as reference:\n"
             f"{json.dumps(SCHEMA_TEMPLATES['example']['collections'], indent=2)}\n\n"
             "Rules:\n"
-            "1. Infer meaningful collection names and attributes from the sentence.\n"
-            "2. Output ONLY the collections section in pure JSON format (starting with '{' and ending with '}').\n"
-            "3. Follow the type definitions and nesting style shown in the example.\n"
-            "4. If nested objects are used, define subfields properly with types.\n"
-            "5. Use plural names for collections where appropriate.\n"
-            "6. Only use these exact types: string, number, boolean, object, array, date.\n"
-            "7. For all fields, include an 'examples' array with **exactly 3–5 values**.\n"
-            "8. Avoid 'null' as a standalone type - use optional fields instead.\n"
-            "9. Do NOT use `required` directly on embedded object fields. Only use it inside their properties.\n"
-            "10. Do NOT add fields like 'description' at the collection level unless it appears in the structure.\n"
-            "11. Ensure embedded objects follow the `structure: 'embedded'` pattern.\n"
-            "12. Validate your output format and match the sample reference exactly."
+            f"1. Create ONLY collections relevant to the specified domain ({data['systemType']}/{data['dataPurpose']}).\n"
+            "2. Output ONLY the collections section in pure JSON format.\n"
+            "3. Keep it simple - maximum 2-3 collections and 5-8 fields per collection.\n"
+            "4. Only use these exact types: string, number, boolean, object, array, date.\n"
+            "5. For all fields, include an 'examples' array with exactly 2-3 domain-appropriate values.\n"
+            "6. Never include examples for boolean fields.\n"
+            "7. Validate your output matches the {data['systemType']} domain exactly."
         )
     else:
         return (

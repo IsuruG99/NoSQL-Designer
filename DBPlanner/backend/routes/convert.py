@@ -12,7 +12,8 @@ class FileConversionRequest(BaseModel):
     filename: str
 
 @router.post("/convert-schema")
-async def parse_file(data: FileConversionRequest):
+async def parse_file(data: FileConversionRequest) -> dict:
+    """Parse the uploaded file and convert it to a schema."""
     print(f"Parsing uploaded file: {data.filename}")
     
     if not data.fileContent:
@@ -30,7 +31,6 @@ async def parse_file(data: FileConversionRequest):
         complete_schema = {
             **SCHEMA_TEMPLATES['top_segment'],
             "collections": collections_section
-            # ,**SCHEMA_TEMPLATES['bottom_segment']
         }
 
         return {"schema": complete_schema}

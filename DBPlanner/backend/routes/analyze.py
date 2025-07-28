@@ -13,8 +13,12 @@ class AnalyzeRequest(BaseModel):
     collections: Dict[str, Any]
 
 @router.post("/analyze-entity")
-async def analyze_entity(data: AnalyzeRequest):
-    print(f"Received analyze request for entity: {data.name}")
+async def analyze_entity(data: AnalyzeRequest) -> Dict[str, Any]:
+    """Analyze the entity structure and provide suggestions."""
+    
+    if not data.name or not data.entity:
+        raise HTTPException(status_code=400, detail="Missing entity name or structure")
+    
     if not data.name or not data.entity:
         raise HTTPException(status_code=400, detail="Missing entity name or structure")
 
