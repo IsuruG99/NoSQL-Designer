@@ -17,7 +17,7 @@ createRoot(document.getElementById('root')).render(
             <Link to="/editor" className="text-xl font-bold text-white">Design</Link>
             <Link to="/export" className="text-xl font-bold text-white">Export</Link>
           </nav>
-          <h1 className="text-3xl font-bold mb-4 text-center">NoSQL Schema Generator</h1>
+          <h1 className="text-3xl font-bold mb-4 text-center">NoSQL - Designer</h1>
 
           <Routes>
             <Route path="/" element={<Generate />} />

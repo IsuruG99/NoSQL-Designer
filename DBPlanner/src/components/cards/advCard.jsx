@@ -18,14 +18,14 @@ function AdvCard({ entity, onEdit, dragHandleprops }) {
         console.error("Invalid entity data:", entity);
         return <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-md">Invalid entity data</div>;
     }
-
+    
     const handleEditClick = () => {
         setSelectedEntity(entity);
         setOriginalSelectedEntity(entity);
         setTempSelectedEntity({ ...entity });
         onEdit();
     };
-
+    
     const renderAttribute = (key, value) => {
         const isObjectOrArray = value.type === 'object' || value.type === 'array';
         const properties = value.type === 'object' ? value.properties : value.items?.properties;

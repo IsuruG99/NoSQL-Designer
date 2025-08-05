@@ -15,6 +15,7 @@ import { SchemaContext } from '../../context/SchemaContext';
 function SortableAdvCard({ entity, onEdit, id }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id });
     return (
+        // This div is the draggable card
         <div
             ref={setNodeRef}
             style={{

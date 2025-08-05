@@ -16,13 +16,10 @@ export function getMongoExport(collectionData, collectionName) {
     const getExampleValue = (key, attr, depth = 0) => {
         // Prevent infinite recursion
         if (depth > 3) return null;
-
-        // Use first example if available
         if (attr.examples && attr.examples.length > 0) {
             return attr.examples[0];
         }
 
-        // Handle different types with fallback examples
         switch (attr.type) {
             case 'string':
                 return key.toLowerCase().includes('email') ? 'example@email.com' :
@@ -43,11 +40,9 @@ export function getMongoExport(collectionData, collectionName) {
 
             case 'array':
                 if (attr.items) {
-                    // Handle array of objects
                     if (attr.items.type === 'object' && attr.items.properties) {
                         return [generateObjectExample(attr.items.properties, depth + 1)];
                     }
-                    // Handle array of primitives
                     return [getExampleValue(key + '_item', attr.items, depth + 1)];
                 }
                 return [];
@@ -67,8 +62,7 @@ export function getMongoExport(collectionData, collectionName) {
         return Object.fromEntries(
             Object.entries(properties).map(([key, prop]) => {
                 let value = getExampleValue(key, prop, depth);
-
-                // Special handling for ID fields
+                // Convert ObjectId strings to MongoDB ObjectId format
                 if (key.toLowerCase().includes('id') && typeof value === 'string') {
                     if (/^[0-9a-f]{24}$/i.test(value)) {
                         value = `ObjectId("${value}")`;
@@ -82,7 +76,6 @@ export function getMongoExport(collectionData, collectionName) {
 
     const documents = [generateObjectExample(collectionData.attributes, 0)];
 
-    // Validate before exporting
     const validation = validateMongoExport(documents, collectionData);
     if (!validation.isValid) {
         const errorMessage = `MongoDB export validation failed for ${collectionName}:\n` +

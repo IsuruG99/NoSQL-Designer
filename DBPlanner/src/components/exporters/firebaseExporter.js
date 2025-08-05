@@ -10,7 +10,6 @@ export function getFirebaseExport(schema) {
   const result = {};
 
   for (const [colName, colData] of Object.entries(schema.collections)) {
-    // Proceed to build sampleDoc
     const sampleDoc = {};
     const attrs = colData.attributes || {};
 

@@ -17,8 +17,6 @@ function JsonCard({ entity }) {
       </div>
     );
   }
-
-  // Recursive render for nested attributes
   const renderAttribute = (key, value, depth = 0) => {
     const star = value.isKey ? (
   <KeyIcon className="ml-1 inline h-2 w-2 text-yellow-400" title="Primary Key" />
@@ -58,7 +56,6 @@ function JsonCard({ entity }) {
         </li>
       );
     }
-    // Primitive
     return (
       <li key={key} className="truncate">
         <strong className="text-cyan-300">{key}:</strong>{" "}

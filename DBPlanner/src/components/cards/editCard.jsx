@@ -9,6 +9,8 @@ import {
 import { AttributeEditor } from '../layout/attributeEditor';
 import { TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
+// Memoize AttributeEditor to prevent unnecessary re-renders
+// avoids re-rendering unless necessary.
 const MemoizedAttributeEditor = memo(AttributeEditor);
 
 /**
@@ -34,6 +36,8 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
     const [entityDescription, setEntityDescription] = useState(isNewCard ? "" : tempSelectedEntity?.description || "");
     const [tempKeys, setTempKeys] = useState(Object.keys(tempSelectedEntity?.attributes || {}));
 
+    // Initialize entity name and description if editing an existing card
+    // Context: This Modal is also used for adding new cards, we're ignoring those
     useEffect(() => {
         if (!isNewCard && tempSelectedEntity) {
             setEntityName(tempSelectedEntity.name || "");
@@ -48,7 +52,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         setTempSelectedEntity(prev => ({ ...prev, name: newName }));
     }, [setTempSelectedEntity]);
 
-
     const handleDescriptionChange = useCallback((e) => {
         const newDescription = e.target.value;
         setEntityDescription(newDescription);
@@ -60,7 +63,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         setTempKeys(Object.keys(updatedAttributes));
     }, [tempSelectedEntity]);
 
-    // const handleAttributeChange = (keyPath, field, value) => {
     const handleAttributeChange = useCallback((keyPath, field, value) => {
         const updatedAttributes = updateAttribute(
             tempSelectedEntity?.attributes || {},
@@ -90,7 +92,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
 
         const updatedEntities = entities.filter(e => e.name !== originalSelectedEntity.name);
         setEntities(updatedEntities);
-
         setOriginalSelectedEntity(null);
         setTempSelectedEntity(null);
         setSelectedEntity(null);
@@ -104,7 +105,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
         setSelectedEntity,
         handleCloseModal
     ]);
-
 
     const handleSave = useCallback(() => {
         try {
@@ -193,7 +193,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
             {/* Attributes Section */}
             <div className="flex-1 overflow-y-auto custom-scrollbar max-h-[50vh] p-4">
                 <h3 className="text-lg font-bold text-cyan-400 mb-2">Attributes</h3>
-
                 <ul className="space-y-2">
                     {tempKeys.map((key) => (
                         // <AttributeEditor
@@ -205,7 +204,6 @@ function EditableCard({ handleCloseModal, isNewCard = false }) {
                             isNested={false} />
                     ))}
                 </ul>
-
                 <button
                     onClick={handleAddAttribute}
                     className="text-white hover:text-cyan-400 text-xl mt-2 flex items-center w-full 

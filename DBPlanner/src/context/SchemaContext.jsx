@@ -9,8 +9,8 @@ export const SchemaContext = createContext();
 
 /**
  * Provider component for SchemaContext.
- * Initializes schema state from localStorage and keeps it in sync.
- * Handles validation of entities and schema.
+ * Manages schema, entities, and selected entity state, persisting them to localStorage.
+ * Validates entities and schema to ensure data integrity.
  *
  * @param {object} props
  * @param {React.ReactNode} props.children - Child components
@@ -25,8 +25,6 @@ export const SchemaProvider = ({ children }) => {
       return null;
     }
   });
-
-  // Entities state, derived from schema.entities or empty array
   const [entities, setEntitiesState] = useState(() => {
     try {
       const s = JSON.parse(localStorage.getItem('schema'));
@@ -35,20 +33,22 @@ export const SchemaProvider = ({ children }) => {
       return [];
     }
   });
-
-  // Keep entities in sync with schema
   useEffect(() => {
     if (schema && Array.isArray(schema.entities)) {
       setEntitiesState(schema.entities);
     }
   }, [schema]);
 
+  /**
+   * Validates an entity’s attributes, ensuring required fields have types.
+   * @param {object} entity - Entity to validate
+   * @returns {boolean} - True if valid, false otherwise
+   */
   const validateEntity = useCallback((entity) => {
     if (!entity || !entity.attributes) return false;
 
     let isValid = true;
     Object.entries(entity.attributes).forEach(([attrName, attrValue]) => {
-      // Check required fields
       if (attrValue.required && attrValue.type === undefined) {
         console.error(`Required field ${attrName} is missing type`);
         isValid = false;
@@ -58,15 +58,16 @@ export const SchemaProvider = ({ children }) => {
     return isValid;
   }, []);
 
-  // When entities change, update schema, collections, and localStorage
+  /**
+   * Updates entities and syncs schema with new collections.
+   * @param {Array} newEntities - Array of entity objects
+   */
   const setEntities = useCallback((newEntities) => {
-    // Validate all entities first
     const allValid = newEntities.every(validateEntity);
     if (!allValid) {
       console.error("Invalid schema data - not saving");
       return;
     }
-
     setSchema(prev => {
       if (!prev) {
         const collections = {};
@@ -76,11 +77,11 @@ export const SchemaProvider = ({ children }) => {
         return { entities: newEntities, collections };
       }
 
+      // Create collections object from entities
       const newCollections = {};
       newEntities.forEach(entity => {
         newCollections[entity.name] = entity;
       });
-      
       const updatedSchema = { 
         ...prev, 
         entities: newEntities, 
@@ -94,6 +95,11 @@ export const SchemaProvider = ({ children }) => {
     setEntitiesState(newEntities);
   }, [setSchema, validateEntity]);
 
+  /**
+   * Validates a schema, ensuring it has valid entities.
+   * @param {object} schema - Schema to validate
+   * @returns {boolean} - True if valid, false otherwise
+   */
   const validateSchema = (schema) => {
   if (!schema) return false;
   if (!schema.entities || !Array.isArray(schema.entities)) return false;
@@ -124,7 +130,6 @@ export const SchemaProvider = ({ children }) => {
       return null;
     }
   });
-
   const [originalSelectedEntity, setOriginalSelectedEntity] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('originalSelectedEntity')) || null;
@@ -134,7 +139,6 @@ export const SchemaProvider = ({ children }) => {
       return null;
     }
   });
-
   const [tempSelectedEntity, setTempSelectedEntity] = useState(() => {
     try {
       return JSON.parse(localStorage.getItem('tempSelectedEntity')) || null;
@@ -148,11 +152,9 @@ export const SchemaProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('selectedEntity', JSON.stringify(selectedEntity));
   }, [selectedEntity]);
-
   useEffect(() => {
     localStorage.setItem('originalSelectedEntity', JSON.stringify(originalSelectedEntity));
   }, [originalSelectedEntity]);
-
   useEffect(() => {
     localStorage.setItem('tempSelectedEntity', JSON.stringify(tempSelectedEntity));
   }, [tempSelectedEntity]);

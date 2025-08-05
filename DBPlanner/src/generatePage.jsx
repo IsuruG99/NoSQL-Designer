@@ -200,7 +200,7 @@ function Generate() {
               <p className="text-sm">Upload your schema file (.json, .cql, .bson)</p>
               <input
                 type="file"
-                accept=".json,.txt,.cql,.bson"
+                accept=".json,.txt,.cql,.bson,.sql"
                 onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
                 className="w-full text-white bg-gray-700 p-2 rounded-lg"
               />

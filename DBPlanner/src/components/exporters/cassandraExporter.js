@@ -1,6 +1,7 @@
 /**
  * Converts a NoSQL-style schema into a Cassandra CQL table definition.
  * Handles nested objects as UDTs, arrays, nullable fields, and primary key logic.
+ * Uses `frozen` types for UDTs and lists to ensure immutability in Cassandra.
  *
  * @param {string} collectionName - Name of the collection (used as the table name).
  * @param {object} collectionData - Schema definition with attributes.
@@ -21,7 +22,7 @@ export function generateCQL(collectionName, collectionData, keyspace = "") {
 
     const effectiveKeyspace = keyspace && keyspace.trim() ? keyspace : "default_keyspace";
     const udtDefs = [];
-    const udtNames = new Map(); // Signature => UDT name
+    const udtNames = new Map(); /* Signature => UDT name */
 
     /**
      * Generates a unique user-defined type (UDT) name.
@@ -81,16 +82,11 @@ export function generateCQL(collectionName, collectionData, keyspace = "") {
                 }
                 return `list<frozen<"${udtNames.get(signature)}">>`;
             } else {
-                const itemType = typeMap[attr.items.type] || 'text';
-                return `list<${itemType}>`;
+                return `list<${typeMap[attr.items.type] || 'text'}>`
             }
         }
-
-        if (attr.type === "null") {
-            return `text /* nullable */`;
-        }
-
-        return typeMap[attr.type] || 'text';
+        
+        return typeMap[attr.type] || 'text' /* nullable */;
     }
 
     const attributes = collectionData.attributes || {};
@@ -107,7 +103,8 @@ export function generateCQL(collectionName, collectionData, keyspace = "") {
     const columnsStrings = columns.map(c => c.col);
     let pkKey;
 
-    if (primaryKeyEntry) {
+    /* If No PK, use first key or "id" */
+    if (primaryKeyEntry) { 
         pkKey = primaryKeyEntry[0];
         pk = `"${pkKey}"`;
     } else {
