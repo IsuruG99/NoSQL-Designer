@@ -1,11 +1,11 @@
 TODOLIST
 
-Completion: 75%
+Completion: 90%
 
 TODO (Main Points)
-- Simplified Generation method
-- Firestore Export
+
 Secondary
+- 
 - Suggestion Refinements?
 - Store Suggestions in Entities? maybe a metadata suggestions storage per collection.
 
@@ -40,6 +40,10 @@ Card Editor Ideas
 - Idk, a better UI? never happy
 
 Last change
+- Fix: Export Buttons disabled if no Schema
+- Fix: Suggestion Tab Hidden if New Attribute
+- Simplified Generation method
+- Firestore Export
 - Generate UI Adjustment
 - Prompt Refinment for Convert-Schema
 - AI Convert User Upload File to UniSchema

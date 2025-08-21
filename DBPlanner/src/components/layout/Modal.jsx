@@ -12,11 +12,13 @@ import { SchemaContext } from '../../context/SchemaContext';
  * @param onClose - Callback to close the modal.
  * @param children - Content to render in the Editor tab.
  */
-const Modal = ({ isOpen, onClose, children }) => {
+const Modal = ({ isOpen, onClose, children, isNewCard }) => {
     const [activeTab, setActiveTab] = useState('Editor');
     const [suggestion, setSuggestion] = useState('');
     const [loading, setLoading] = useState(false);
     const { selectedEntity, schema } = useContext(SchemaContext);
+
+    const isNewEntity = !selectedEntity?.attributes || selectedEntity.attributes.length === 0;
 
     if (!isOpen) return null;   // Don't render anything if modal is closed
     JSON.parseSafe = (str) => {
@@ -29,6 +31,7 @@ const Modal = ({ isOpen, onClose, children }) => {
 
     // Handle entity analysis
     const handleAnalyze = async () => {
+        console.log('Analyzing entity:', selectedEntity.name, selectedEntity.attributes);
         if (!selectedEntity || !selectedEntity.name) return;
         if (!isOpen) {
             console.warn("Modal is not open, cannot analyze entity.");
@@ -36,6 +39,14 @@ const Modal = ({ isOpen, onClose, children }) => {
         }
         setLoading(true);
         setSuggestion('');
+
+        // Validate if there are any attributes in the selected entity
+        if (!selectedEntity.attributes || selectedEntity.attributes.length === 0) {
+            console.log("No attributes found in the selected entity:", selectedEntity);
+            setSuggestion('Anomaly: No attributes found in the selected entity.');
+            setLoading(false);
+            return;
+        }
 
         try {
             const startTime = performance.now();
@@ -77,11 +88,17 @@ const Modal = ({ isOpen, onClose, children }) => {
                             {['Editor', 'Suggestions'].map(tab => (
                                 <button
                                     key={tab}
-                                    onClick={() => setActiveTab(tab)}
-                                    className={`text-sm font-medium ${activeTab === tab
-                                        ? 'text-cyan-400 border-b-2 border-cyan-400'
-                                        : 'text-gray-400 hover:text-cyan-300'
-                                        }`}>
+                                    onClick={() => !isNewCard && setActiveTab(tab)}
+                                    disabled={isNewCard && tab === 'Suggestions'}
+                                    className={`text-sm font-medium px-2 py-1 rounded
+    ${activeTab === tab && !isNewCard
+                                            ? 'text-cyan-400 border-b-2 border-cyan-400'
+                                            : isNewCard && tab === 'Suggestions'
+                                                ? 'text-gray-500 opacity-50 cursor-not-allowed'
+                                                : 'text-gray-400 hover:text-cyan-300'
+                                        }`}
+                                    title={isNewCard && tab === 'Suggestions' ? 'Disabled for new entities' : ''}
+                                >
                                     {tab}
                                 </button>
                             ))}
@@ -100,6 +117,10 @@ const Modal = ({ isOpen, onClose, children }) => {
                             <div className="flex-1 w-full">
                                 {children}
                             </div>
+                        ) : isNewCard ? (
+                            <p className="text-gray-400 text-sm">
+                                Suggestions are disabled for new entities until saved.
+                            </p>
                         ) : (
                             <div className="flex flex-col w-full h-full">
                                 <button

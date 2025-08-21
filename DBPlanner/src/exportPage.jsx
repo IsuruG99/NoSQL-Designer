@@ -10,10 +10,13 @@ import ajv from 'ajv';
 
 const ExportComponent = () => {
     const { schema } = useContext(SchemaContext);
+    const [schemaWarning, setSchemaWarning] = useState(false);
     const [selectedDB, setSelectedDB] = useState(null);
     const [selectedCollection, setSelectedCollection] = useState(null);
     const [cql, setCql] = useState('');
     const [keyspace, setKeyspace] = useState('');
+
+    const isSchemaReady = schema?.collections && Object.keys(schema.collections).length > 0;
 
     const handleCopy = () => {
         navigator.clipboard.writeText(cql);
@@ -42,31 +45,67 @@ const ExportComponent = () => {
         <div className="flex flex-col items-center p-4 bg-gray-900 text-white min-h-screen w-full">
             <h2 className='text-xl font-bold mb-4 text-center'>Choose Export Target</h2>
             <div className="flex space-x-6 mb-6">
-                <div onClick={() => setSelectedDB('firestore')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
-                    <p className='text-lg font-semibold text-center'>Firestore</p>
+                <div
+                    onClick={() => {
+                        setSelectedDB('firestore');
+                        setSchemaWarning(!isSchemaReady);
+                    }}
+                    className={`cursor-pointer border rounded p-4 shadow hover:bg-gray-800 ${!isSchemaReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                    <p className='text-lg font-semibold text-center'>Firebase</p>
+                    <p className='text-sm text-gray-300'>Realtime Database JSON</p>
                 </div>
-                <div onClick={() => setSelectedDB('mongodb')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
+                <div
+                    onClick={() => {
+                        setSelectedDB('mongodb');
+                        setSchemaWarning(!isSchemaReady);
+                    }}
+                    className={`cursor-pointer border rounded p-4 shadow hover:bg-gray-800 ${!isSchemaReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
                     <p className='text-lg font-semibold text-center'>MongoDB</p>
+                    <p className='text-sm text-gray-300'>JSON per Collection</p>
                 </div>
-                <div onClick={() => setSelectedDB('cassandra')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
+                <div
+                    onClick={() => {
+                        setSelectedDB('cassandra');
+                        setSchemaWarning(!isSchemaReady);
+                    }}
+                    className={`cursor-pointer border rounded p-4 shadow hover:bg-gray-800 ${!isSchemaReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
                     <p className='text-lg font-semibold text-center'>Cassandra</p>
+                    <p className='text-sm text-gray-300'>CQL per Collection</p>
                 </div>
-                <div onClick={() => setSelectedDB('json')} className="cursor-pointer border rounded p-4 shadow hover:bg-gray-800">
-                    <p className='text-lg font-semibold text-center'>Raw JSON</p>
+                <div
+                    onClick={() => {
+                        setSelectedDB('json');
+                        setSchemaWarning(!isSchemaReady);
+                    }}
+                    className={`cursor-pointer border rounded p-4 shadow hover:bg-gray-800 ${!isSchemaReady ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                    <p className='text-lg font-semibold text-center'>JSON</p>
+                    <p className='text-sm text-gray-300'>Full schema JSON</p>
                 </div>
             </div>
-            {selectedDB === 'firestore' && (
+
+            {schemaWarning && (
+                <div className="text-red-400 italic mb-4">
+                    Please generate a schema first to see available collections.
+                </div>
+            )}
+            {isSchemaReady && selectedDB === 'firestore' && (
                 <div className="w-full max-w-2xl mt-6 text-center">
                     <h3 className="text-lg font-semibold mb-4">Firebase / Firestore</h3>
-                    <button
-                        onClick={() => {
-                            const exportData = getJSONExport(schema, true);
-                            downloadFile(exportData.content, exportData.fileName, exportData.mimeType);
-                        }}
-                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 border-b-4 border-blue-800 shadow"
-                    >
-                        Download JSON
-                    </button>
+                    <div>
+                        <button
+                            onClick={() => {
+                                const exportData = getJSONExport(schema, true);
+                                downloadFile(exportData.content, exportData.fileName, exportData.mimeType);
+                            }}
+                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 border-b-4 border-blue-800 shadow"
+                        >
+                            Download JSON
+                        </button>
+                    </div>
                     <div className="mt-4 text-sm text-gray-300 max-w-xl mx-auto">
                         <p>
                             This JSON export can be directly imported into{' '}
@@ -85,21 +124,21 @@ const ExportComponent = () => {
                             For <strong>Firestore</strong>, importing requires a script using the Firebase SDK.
                             See the official{' '}
                             <strong>
-                            <a
-                                href="https://firebase.google.com/docs/firestore/manage-data/add-data#node.js_2"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="underline hover:text-blue-700"
-                            >
-                                Firestore docs
-                            </a></strong>{' '}
+                                <a
+                                    href="https://firebase.google.com/docs/firestore/manage-data/add-data#node.js_2"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline hover:text-blue-700"
+                                >
+                                    Firestore docs
+                                </a></strong>{' '}
                             for guidance.
                         </p>
                     </div>
                 </div>
             )}
 
-            {selectedDB === 'mongodb' && (
+            {isSchemaReady && selectedDB === 'mongodb' && (
                 <div className="w-full max-w-2xl mt-6">
                     <h3 className='text-lg font-semibold mb-4 text-center'>Download MongoDB-Compatible JSON per Collection</h3>
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
@@ -115,9 +154,10 @@ const ExportComponent = () => {
                             </div>
                         ))}
                     </div>
+
                 </div>
             )}
-            {selectedDB === 'json' && (
+            {isSchemaReady && selectedDB === 'json' && (
                 <div className="mt-6 text-center">
                     <button
                         onClick={() => {
@@ -130,7 +170,7 @@ const ExportComponent = () => {
                     </button>
                 </div>
             )}
-            {selectedDB === 'cassandra' && (
+            {isSchemaReady && selectedDB === 'cassandra' && (
                 <div className="w-full max-w-2xl mt-6">
                     <h3 className='text-lg font-semibold mb-4 text-center'>Cassandra Table Export</h3>
 
@@ -146,7 +186,6 @@ const ExportComponent = () => {
                             className="border rounded px-2 py-1 w-48 bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
                         />
                     </div>
-
                     <div className="flex flex-wrap gap-2 mb-4 justify-center">
                         {Object.keys(schema.collections).map((collectionName) => (
                             <button
