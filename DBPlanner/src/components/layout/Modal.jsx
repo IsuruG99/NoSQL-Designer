@@ -20,7 +20,7 @@ const Modal = ({ isOpen, onClose, children, isNewCard }) => {
 
     const isNewEntity = !selectedEntity?.attributes || selectedEntity.attributes.length === 0;
 
-    if (!isOpen) return null;   // Don't render anything if modal is closed
+    if (!isOpen) return null; 
     JSON.parseSafe = (str) => {
         try {
             return JSON.parse(str);
@@ -40,7 +40,6 @@ const Modal = ({ isOpen, onClose, children, isNewCard }) => {
         setLoading(true);
         setSuggestion('');
 
-        // Validate if there are any attributes in the selected entity
         if (!selectedEntity.attributes || selectedEntity.attributes.length === 0) {
             console.log("No attributes found in the selected entity:", selectedEntity);
             setSuggestion('Anomaly: No attributes found in the selected entity.');
@@ -91,7 +90,7 @@ const Modal = ({ isOpen, onClose, children, isNewCard }) => {
                                     onClick={() => !isNewCard && setActiveTab(tab)}
                                     disabled={isNewCard && tab === 'Suggestions'}
                                     className={`text-sm font-medium px-2 py-1 rounded
-    ${activeTab === tab && !isNewCard
+                                        ${activeTab === tab && !isNewCard
                                             ? 'text-cyan-400 border-b-2 border-cyan-400'
                                             : isNewCard && tab === 'Suggestions'
                                                 ? 'text-gray-500 opacity-50 cursor-not-allowed'

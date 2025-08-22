@@ -151,7 +151,7 @@ export function AttributeEditor({
                                 <div className="bg-gray-800 rounded p-2 max-h-32 overflow-y-auto">
                                     {attributeValue.examples.map((example, index) => (
                                         <div key={index} className="flex justify-between items-center mb-1 last:mb-0">
-                                            <span className="text-gray-300">{example}</span>
+                                            <span className="text-gray-300">{typeof example === "object" ? JSON.stringify(example) : example}</span>
                                             <button
                                                 onClick={() => {
                                                     const newExamples = [...attributeValue.examples];

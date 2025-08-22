@@ -26,7 +26,7 @@ const Editor = () => {
     return (
         <div className="flex flex-col items-center w-full min-h-screen h-full">
             <div className="editor w-full max-w-4xl space-y-4 h-full">
-                {selectedEntity && (
+                {(selectedEntity || isNewCard) && (
                     <Modal isOpen={isModalOpen} onClose={handleCloseModal} isNewCard={isNewCard}>
                         <EditableCard handleCloseModal={handleCloseModal} isNewCard={isNewCard} />
                     </Modal>

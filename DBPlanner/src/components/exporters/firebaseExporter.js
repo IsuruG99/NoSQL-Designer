@@ -30,11 +30,11 @@ export function getFirebaseExport(schema) {
         sampleDoc[attrName] = dummyValueForType(attrData.type);
       }
     }
-
-    // Wrap in a document ID (default: "sample1")
-    result[colName] = {
-      sample1: sampleDoc
-    };
+    
+    // Use the first example ID if available, otherwise default to "sample1"
+    const idAttr = Object.entries(attrs).find(([k, v]) => k.toLowerCase().endsWith("id"));
+    const docId = idAttr && idAttr[1].examples ? idAttr[1].examples[0] : "sample1";
+    result[colName] = { [docId]: sampleDoc };
   }
 
   return result;

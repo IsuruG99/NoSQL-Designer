@@ -40,10 +40,14 @@ Card Editor Ideas
 - Idk, a better UI? never happy
 
 Last change
+- Fix: FirebaseExporter now populates ID field properly
+- Fix: Objects not rendering properly on a certain scenario
+- Fix: Add Card not working on a certain scenario
 - Fix: Export Buttons disabled if no Schema
-- Fix: Suggestion Tab Hidden if New Attribute
-- Simplified Generation method
+- Update: Suggestion Tab is now hidden on AddCard
+August
 - Firestore Export
+- Simplified Generation method
 - Generate UI Adjustment
 - Prompt Refinment for Convert-Schema
 - AI Convert User Upload File to UniSchema
