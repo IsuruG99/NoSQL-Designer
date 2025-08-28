@@ -204,10 +204,11 @@ function Generate() {
 
       {inputMode === "Upload" && (
         <div className="bg-gray-800 p-3 rounded-lg text-white space-y-2">
-          <p className="text-sm">Upload your schema file (.json, .cql, .bson)</p>
+          <p className="text-sm">Upload your schema file (.json, .cql, .bson, sql)</p>
+          <p className="text-sm">(.txt not supported)</p>
           <input
             type="file"
-            accept=".json,.txt,.cql,.bson,.sql"
+            accept=".json,.cql,.bson,.sql"
             onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
             className="w-full text-white bg-gray-700 p-2 rounded-lg"
           />

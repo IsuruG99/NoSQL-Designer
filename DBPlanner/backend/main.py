@@ -5,7 +5,7 @@ from routes import analyze, generate, convert
 # Init
 app = FastAPI()
 
-# CORS
+# CORS (All allowed for Development)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
