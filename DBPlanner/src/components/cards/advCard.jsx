@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { SchemaContext } from '../../context/SchemaContext';
-import { KeyIcon, ExclamationCircleIcon,  PencilIcon } from '@heroicons/react/24/solid';
+import { KeyIcon, ExclamationCircleIcon, PencilIcon } from '@heroicons/react/24/solid';
 import '../../css/customScrollbar.css';
 
 /**
@@ -18,14 +18,14 @@ function AdvCard({ entity, onEdit, dragHandleprops }) {
         console.error("Invalid entity data:", entity);
         return <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-md">Invalid entity data</div>;
     }
-    
+
     const handleEditClick = () => {
         setSelectedEntity(entity);
         setOriginalSelectedEntity(entity);
         setTempSelectedEntity({ ...entity });
         onEdit();
     };
-    
+
     const renderAttribute = (key, value) => {
         const isObjectOrArray = value.type === 'object' || value.type === 'array';
         const properties = value.type === 'object' ? value.properties : value.items?.properties;
@@ -54,18 +54,18 @@ function AdvCard({ entity, onEdit, dragHandleprops }) {
         <div className="json-card p-4 bg-gray-800 text-white rounded-lg shadow-lg w-[220px] h-[300px] overflow-y-auto border border-gray-700 custom-scrollbar">
             <div className="flex justify-between items-center mb-2">
                 <h3
-                    className="text-lg font-bold text-cyan-400 cursor-move"
-                    {...(dragHandleprops || {})}
-                    title="Drag to reorder">
-                    {entity.name}
-                </h3>
-                <button
-                    onClick={handleEditClick}
-                    className="w-7 h-7 flex items-center justify-center bg-blue-600 rounded shadow hover:bg-blue-700 transition"
-                    title="Edit"
-                    style={{ minWidth: 0, minHeight: 0, padding: 0 }}>
-                    <PencilIcon className="h-4 w-4 text-white" />
-                </button>
+    className="text-lg font-bold text-cyan-400 cursor-move break-words whitespace-normal truncate max-w-[170px]" 
+    {...(dragHandleprops || {})}
+  >
+    {entity.name}
+  </h3>
+  <button
+    onClick={handleEditClick}
+    className="w-7 h-7 flex items-center justify-center bg-blue-600 rounded shadow hover:bg-blue-700 transition"
+    title="Edit"
+    style={{ minWidth: 0, minHeight: 0, padding: 0 }}>
+    <PencilIcon className="h-4 w-4 text-white" />
+  </button>
             </div>
 
             <hr className="border-gray-600 mb-2" />

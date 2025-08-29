@@ -5,9 +5,9 @@ import Panel from "./components/layout/basicPanel.jsx";
 
 function Generate() {
   const [detailedData, setDetailedData] = useState({
-    description: "A simple coffee shop",
-    entities: "staff, orders, ingredients",
-    constraints: "don't store OrderID"
+    description: "",
+    entities: "",
+    constraints: ""
   });
   const [simplifiedData, setSimplifiedData] = useState({
     systemType: "",
@@ -159,20 +159,20 @@ function Generate() {
           <textarea
             value={detailedData.description}
             onChange={handleDetailedChange("description")}
-            placeholder="Description *"
+            placeholder="Describe your database requirements in detail... (e.g., A database for a restaurant to manage staff, orders, ingredients...)"
             className="w-full p-3 bg-gray-800 text-white rounded-lg h-24 resize-none"
             required
           />
           <input
             value={detailedData.entities}
             onChange={handleDetailedChange("entities")}
-            placeholder="Entities (comma-separated, optional)"
+            placeholder="(Optional) Main categories in your database... (e.g., staff, orders, ingredients)"
             className="w-full p-3 bg-gray-800 text-white rounded-lg"
           />
           <input
             value={detailedData.constraints}
             onChange={handleDetailedChange("constraints")}
-            placeholder="Constraints (comma-separated, optional)"
+            placeholder="(Optional) Any specific rules or constraints... (e.g., don't store OrderID, ingredients can be in multiple orders)"
             className="w-full p-3 bg-gray-800 text-white rounded-lg"
           />
         </>
