@@ -18,12 +18,10 @@ async def analyze_entity(data: AnalyzeRequest) -> Dict[str, Any]:
     
     if not data.name or not data.entity:
         raise HTTPException(status_code=400, detail="Missing entity name or structure")
-    
-    if not data.name or not data.entity:
-        raise HTTPException(status_code=400, detail="Missing entity name or structure")
 
     try:
         prompt = get_analyze_prompt(data.dict())
+        # I know dict is deprecated for this context, but it functions either way
         suggestion_raw = await invoke_gemini(prompt)
         
         if suggestion_raw is None:

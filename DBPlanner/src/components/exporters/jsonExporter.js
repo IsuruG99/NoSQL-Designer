@@ -10,7 +10,6 @@ import { validateFirebaseExport, formatValidationErrors } from '../../utils/json
  * @returns {{ content: string, fileName: string, mimeType: string, errors?: string|null }} - Export data and optional validation errors.
  */
 export function getJSONExport(schema, firebase = false) {
-  // Validate the input schema first
   const validation = validateFirebaseExport(schema, schema);
   if (!validation.isValid) {
     return {
@@ -25,7 +24,6 @@ export function getJSONExport(schema, firebase = false) {
     // Remove $schema and $meta before Firebase conversion
     const cleanSchema = { collections: schema.collections };
 
-    // Validate cleaned schema for Firebase export before generating output
     const firebaseValidation = validateFirebaseExport(cleanSchema, cleanSchema);
     if (!firebaseValidation.isValid) {
       return {
@@ -44,7 +42,7 @@ export function getJSONExport(schema, firebase = false) {
       errors: null
     };
   } else {
-    // Normal export includes $schema and $meta
+    // Add back $schema and $meta for Draft-07 style
     const { collections, $schema, $meta } = schema;
     const cleanSchema = {
       ...(!!$schema && { $schema }),

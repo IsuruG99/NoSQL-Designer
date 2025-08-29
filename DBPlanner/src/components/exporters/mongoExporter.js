@@ -14,7 +14,7 @@ export function getMongoExport(collectionData, collectionName) {
     );
 
     const getExampleValue = (key, attr, depth = 0) => {
-        // Prevent infinite recursion
+        // Depth Limit to prevent excessive looping
         if (depth > 3) return null;
         if (attr.examples && attr.examples.length > 0) {
             return attr.examples[0];
@@ -44,8 +44,6 @@ export function getMongoExport(collectionData, collectionName) {
                 return { "$date": new Date().toISOString() };
             }
 
-
-
             case 'array':
                 if (attr.items) {
                     if (attr.items.type === 'object' && attr.items.properties) {
@@ -70,7 +68,7 @@ export function getMongoExport(collectionData, collectionName) {
         return Object.fromEntries(
             Object.entries(properties).map(([key, prop]) => {
                 let value = getExampleValue(key, prop, depth);
-                // Convert ObjectId strings to MongoDB ObjectId format
+                // To MongoID Specific Format
                 if (key.toLowerCase().includes('id') && typeof value === 'string') {
                     if (/^[0-9a-f]{24}$/i.test(value)) {
                         value = `ObjectId("${value}")`;

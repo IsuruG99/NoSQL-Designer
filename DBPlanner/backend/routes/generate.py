@@ -31,8 +31,8 @@ async def generate(data: SchemaRequest):
         raise HTTPException(status_code=400, detail="Invalid mode.")
 
     try:
-        # Pass the whole dict and mode to your prompt generator
         prompt = get_schema_prompt(data.dict(), data.mode)
+        # I know dict is deprecated for this context, but it functions either way
         raw_json = await invoke_gemini(prompt)
 
         if not isinstance(raw_json, str):

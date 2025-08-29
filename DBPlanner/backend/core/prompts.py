@@ -1,6 +1,8 @@
 import json
 from typing import Dict, Any
 
+# Inspired from JSON Schema Structures. 
+# Especially Draft 7: https://json-schema.org/specification-links.html#draft-7
 SCHEMA_TEMPLATES = {
     "top_segment": {
         "$schema": "http://json-schema.org/draft-07/schema#",
@@ -64,6 +66,7 @@ SCHEMA_TEMPLATES = {
     }
 }
 
+# DISCLAIMER: ALL Prompt Rulesets are created relying advice from GPT-4 and some help from Deepseek V3 occasionally. 
 def get_schema_prompt(data: Dict[str, Any], mode: str = "Detailed") -> str:
     """Generate the appropriate prompt based on the requested mode"""
     if mode == "Simplified":
@@ -106,7 +109,8 @@ def get_schema_prompt(data: Dict[str, Any], mode: str = "Detailed") -> str:
             "13. Validate structure before responding. Output must exactly match the shape, nesting, and formatting style of the reference.\n"
             "14. Format `examples` values always as an array, never as a single string or number.\n"
         )
-
+    
+# DISCLAIMER: ALL Prompt Rulesets are created relying advice from GPT-4 and some help from Deepseek V3 occasionally. 
 def get_analyze_prompt(data: Dict[str, Any]) -> str:
     """Generate the analysis prompt with example output format"""
     analyze_output_format = {
@@ -150,6 +154,7 @@ def get_analyze_prompt(data: Dict[str, Any]) -> str:
         f"{json.dumps(analyze_output_format, indent=2)}"
     )
 
+# DISCLAIMER: ALL Prompt Rulesets are created relying advice from GPT-4 and some help from Deepseek V3 occasionally. 
 def get_convert_prompt(file_content: str, filename: str) -> str:
     """Prompt to convert raw file contents (JSON, BSON, CQL, SQL, etc.) into schema format"""
     return (

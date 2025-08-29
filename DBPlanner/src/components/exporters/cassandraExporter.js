@@ -1,3 +1,5 @@
+// DISCLAIMER: I have very limited experience with Cassandra, so I relied on GPT-4 heavily to generate this code.
+
 /**
  * Converts a NoSQL-style schema into a Cassandra CQL table definition.
  * Handles nested objects as UDTs, arrays, nullable fields, and primary key logic.

@@ -9,6 +9,8 @@ import {
 import { AttributeEditor } from '../layout/attributeEditor';
 import { TrashIcon, XMarkIcon } from '@heroicons/react/24/solid';
 
+// DISCLAIMER: * Almost the entire structure of how EditCard , AttributeHandler and AttributeEditor performs is made in tandem with GPT-4. It was extremely complex.
+
 // Memoize AttributeEditor to prevent unnecessary re-renders
 // avoids re-rendering unless necessary.
 const MemoizedAttributeEditor = memo(AttributeEditor);

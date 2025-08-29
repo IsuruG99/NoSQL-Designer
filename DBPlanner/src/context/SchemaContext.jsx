@@ -76,8 +76,7 @@ export const SchemaProvider = ({ children }) => {
         });
         return { entities: newEntities, collections };
       }
-
-      // Create collections object from entities
+      
       const newCollections = {};
       newEntities.forEach(entity => {
         newCollections[entity.name] = entity;

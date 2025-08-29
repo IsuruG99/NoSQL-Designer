@@ -83,7 +83,6 @@ function Generate() {
         return;
       }
 
-      // Dynamic payload per mode
       let payload;
       if (inputMode === "Simplified") {
         const { systemType, dataPurpose } = simplifiedData;
@@ -149,7 +148,6 @@ function Generate() {
     </div>
 
     <div className="space-y-4">
-      {/* Privacy Warning */}
       <div className="p-3 bg-gray-800 text-white rounded-lg border-l-4 border-yellow-500 text-sm">
         <p>
           <span className="font-semibold">Privacy Notice:</span> All inputs (text or uploaded files) are sent to the Gemini API for processing. Avoid including sensitive or personal information.

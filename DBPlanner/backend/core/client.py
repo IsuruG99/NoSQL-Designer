@@ -13,6 +13,7 @@ if not API_KEY:
 
 client = genai.Client(api_key=API_KEY)
 
+# Majority of this section provided by Official Google Gemini API documentation
 async def invoke_gemini(prompt: str) -> Optional[str]:
     """Execute LLM call using Gemini API"""
     max_retries = 3
