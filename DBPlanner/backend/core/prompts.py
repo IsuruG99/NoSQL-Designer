@@ -14,24 +14,30 @@ SCHEMA_TEMPLATES = {
             "AllTypesTest": {
                 "name": "AllTypesTest",
                 "attributes": {
+                    "ID-style-field": {
+                        "type": "number", #situational, could be string or number
+                        "required": True,
+                        "isKey": True,
+                        "examples": ["Sample text", "Another example", "Test value"]
+                    },
                     "StringField": {
                         "type": "string",
-                        "required": True,
+                        "required": True, #depends
                         "examples": ["Sample text", "Another example", "Test value"]
                     },
                     "NumberField": {
                         "type": "number",
-                        "required": False,
+                        "required": False, #depends
                         "examples": [42, 3.14]
                     },
                     "BooleanField": {
                         "type": "boolean",
-                        "required": False
+                        "required": False #depends
                     },
                     "DateField": {
                         "type": "date",
-                        "required": False,
-                        "examples": ["2023-10-01T12:00:00Z", "2024-01-15T00:00:00Z"]
+                        "required": False, #depends
+                        "examples": ["2023-10-01T12:00:00Z", "2024-01-15T00:00:00Z"] # ISO 8601 format
                     },
                     "NullField": {
                         "type": "null"
@@ -164,7 +170,8 @@ def get_convert_prompt(file_content: str, filename: str) -> str:
         f"2. Stick to these types only: string, number, boolean, object, array, date.\n"
         f"3. Use `structure: 'embedded'` for nested objects/arrays.\n"
         f"4. Include 'examples' with 3–5 values per field where possible (for string/number/date only).\n"
-        f"5. Skip irrelevant metadata or comments — only schema logic matters.\n"
-        f"6. DO NOT return SQL or other code — only return the final JSON `collections` structure.\n"
-        f"7. Validate your output — make sure it's clean JSON and uses the sample schema shape.\n"
+        f"5. For date fields, ensure all example values are in ISO 8601 format (e.g., '2023-10-01T12:00:00Z').\n"
+        f"6. Skip irrelevant metadata or comments — only schema logic matters.\n"
+        f"7. DO NOT return SQL or other code — only return the final JSON `collections` structure.\n"
+        f"8. Validate your output — make sure it's clean JSON and uses the sample schema shape.\n"
     )

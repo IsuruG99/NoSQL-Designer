@@ -35,8 +35,16 @@ export function getMongoExport(collectionData, collectionName) {
             case 'boolean':
                 return true;
 
-            case 'date':
+            case 'date': {
+                let example = attr.examples && attr.examples.length > 0 ? attr.examples[0] : null;
+                if (example) {
+                    const iso = new Date(example).toISOString();
+                    return { "$date": iso };
+                }
                 return { "$date": new Date().toISOString() };
+            }
+
+
 
             case 'array':
                 if (attr.items) {
@@ -78,7 +86,7 @@ export function getMongoExport(collectionData, collectionName) {
 
     const validation = validateMongoExport(documents, collectionData);
     if (!validation.isValid) {
-        const errorMessage = `MongoDB export validation failed for ${collectionName}:\n` +
+        const errorMessage = `MongoDB export validation failed for ${collectionName}:\n in ${collectionData}` +
             formatValidationErrors(validation.errors);
         console.error(errorMessage);
         throw new Error(errorMessage);
