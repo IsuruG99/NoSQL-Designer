@@ -1,0 +1,23 @@
+services:
+  backend:
+    build:
+      context: ./DBPlanner/backend
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./DBPlanner/backend:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./DBPlanner
+      dockerfile: Dockerfile.frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./DBPlanner:/app
+      - /app/node_modules  
+    command: npm run dev -- --host 0.0.0.0
